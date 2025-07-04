@@ -50,6 +50,53 @@ namespace gs1BarcodeApplication.Controllers
             ViewBag.QrImage = qrImage;
             return View("LabelResult", model);
         }
+        [HttpPost]
+        public FileResult ExportPdf(string gs1String, string barcodeBase64, string qrBase64)
+        {
+            using (MemoryStream ms = new MemoryStream())
+            {
+                Document document = new Document(PageSize.A6);
+                PdfWriter.GetInstance(document, ms);
+                document.Open();
+
+                // Fonts
+                var titleFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 14);
+                var textFont = FontFactory.GetFont(FontFactory.HELVETICA, 10);
+
+                // Title
+                document.Add(new Paragraph("GS1 Label", titleFont));
+                document.Add(new Paragraph(" "));
+
+                // GS1 String
+                document.Add(new Paragraph("GS1 Data:", textFont));
+                document.Add(new Paragraph(gs1String, textFont));
+                document.Add(new Paragraph(" "));
+
+                // Barcode Image
+                if (!string.IsNullOrEmpty(barcodeBase64))
+                {
+                    byte[] barcodeBytes = Convert.FromBase64String(barcodeBase64.Replace("data:image/png;base64,", ""));
+                    iTextSharp.text.Image barcodeImg = iTextSharp.text.Image.GetInstance(barcodeBytes);
+                    barcodeImg.ScaleToFit(200f, 50f);
+                    document.Add(barcodeImg);
+                }
+
+                document.Add(new Paragraph(" "));
+
+                // QR Image
+                if (!string.IsNullOrEmpty(qrBase64))
+                {
+                    byte[] qrBytes = Convert.FromBase64String(qrBase64.Replace("data:image/png;base64,", ""));
+                    iTextSharp.text.Image qrImg = iTextSharp.text.Image.GetInstance(qrBytes);
+                    qrImg.ScaleToFit(100f, 100f);
+                    document.Add(qrImg);
+                }
+
+                document.Close();
+
+                return File(ms.ToArray(), "application/pdf", "GS1_Label.pdf");
+            }
+        }
 
 
 

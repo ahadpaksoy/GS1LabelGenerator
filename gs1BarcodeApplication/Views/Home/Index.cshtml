@@ -7,15 +7,49 @@
 <!DOCTYPE html>
 <html>
 <head>
+
     <meta charset="utf-8" />
     <title>GS1 Label Generator</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+    <style>
+        body.dark-mode {
+            background-color: #121212 !important;
+            color: #e0e0e0 !important;
+        }
+
+            body.dark-mode .card {
+                background-color: #1e1e1e !important;
+                color: #e0e0e0 !important;
+            }
+
+            body.dark-mode .form-control {
+                background-color: #333 !important;
+                color: #eee !important;
+                border-color: #555 !important;
+            }
+
+            body.dark-mode .btn-outline-primary,
+            body.dark-mode .btn-outline-success,
+            body.dark-mode .btn-secondary {
+                color: #bbb !important;
+                border-color: #666 !important;
+            }
+
+                body.dark-mode .btn-outline-primary:hover,
+                body.dark-mode .btn-outline-success:hover,
+                body.dark-mode .btn-secondary:hover {
+                    background-color: #444 !important;
+                    border-color: #888 !important;
+                }
+    </style>
+
 </head>
 <body class="bg-light">
     <div class="container py-5">
         <div class="card shadow p-4">
             <h2 class="mb-4">📦 Dynamic GS1 Label Builder</h2>
-
+            <button id="darkModeToggle" class="btn btn-secondary mb-3">🌙 Toggle Dark Mode</button>
             <form method="post" action="/Home/Submit" id="gs1Form">
                 <div id="inputList" class="mb-3"></div>
 
@@ -221,6 +255,28 @@
                 input.classList.remove("is-invalid");
             }
         }
+        const toggleBtn = document.getElementById('darkModeToggle');
+
+        function setDarkMode(enabled) {
+            if (enabled) {
+                document.body.classList.add('dark-mode');
+                localStorage.setItem('darkMode', 'true');
+                toggleBtn.textContent = '☀️ Light Mode';
+            } else {
+                document.body.classList.remove('dark-mode');
+                localStorage.setItem('darkMode', 'false');
+                toggleBtn.textContent = '🌙 Dark Mode';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const darkModePref = localStorage.getItem('darkMode') === 'true';
+            setDarkMode(darkModePref);
+        });
+
+        toggleBtn.addEventListener('click', () => {
+            setDarkMode(!document.body.classList.contains('dark-mode'));
+        });
 
 
 
@@ -233,6 +289,8 @@
             });
         });
     </script>
+
+
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
