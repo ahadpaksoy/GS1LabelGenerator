@@ -1,0 +1,126 @@
+﻿@model gs1BarcodeApplication.Models.ProductLabelModel
+@{
+    ViewBag.Title = "GS1 Label Result";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>GS1 Barcode Result</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .barcode-img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .copy-btn {
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <div class="card shadow-sm p-4">
+            <h2 class="mb-4">✅ GS1 Barcode Generated</h2>
+            <div class="row text-center mb-4">
+                <div class="col-md-6">
+                    <p><strong>Barcode</strong></p>
+                    <img src="@ViewBag.BarcodeImage" class="img-thumbnail" alt="GS1 Barcode" />
+                </div>
+                <div class="col-md-6">
+                    <p><strong>QR Code</strong></p>
+                    <img src="@ViewBag.QrImage" class="img-thumbnail" alt="GS1 QR Code" />
+                </div>
+            </div>
+
+
+            <div class="mb-3">
+                <label class="form-label fw-bold">GS1 String</label>
+                <div class="input-group">
+                    <input type="text" class="form-control" id="gs1String" value="@ViewBag.Gs1String" readonly>
+                    <button class="btn btn-outline-secondary" type="button" onclick="copyGs1()">📋 Copy</button>
+                </div>
+            </div>
+
+
+
+            <h5 class="mt-4">📋 Field Summary</h5>
+            <table class="table table-bordered table-sm mt-2">
+                <thead class="table-light">
+                    <tr>
+                        <th>Field</th>
+                        <th>Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!string.IsNullOrWhiteSpace(Model.GTIN))
+                    {
+                        <tr><td>GTIN (01)</td><td>@Model.GTIN</td></tr>}
+                    @if (!string.IsNullOrWhiteSpace(Model.batch_lotNumber))
+                    {
+                        <tr><td>Batch / Lot Number (10)</td><td>@Model.batch_lotNumber</td></tr>}
+                    @if (!string.IsNullOrWhiteSpace(Model.productionDate))
+                    {
+                        <tr><td>Production Date (11)</td><td>@Model.productionDate</td></tr>}
+                    @if (!string.IsNullOrWhiteSpace(Model.bestBeforeDate))
+                    {
+                        <tr><td>Best Before Date (15)</td><td>@Model.bestBeforeDate</td></tr>}
+                    @if (!string.IsNullOrWhiteSpace(Model.expirationDate))
+                    {
+                        <tr><td>Expiration Date (17)</td><td>@Model.expirationDate</td></tr>}
+                    @if (!string.IsNullOrWhiteSpace(Model.serialNumber))
+                    {
+                        <tr><td>Serial Number (21)</td><td>@Model.serialNumber</td></tr>}
+                    @if (!string.IsNullOrWhiteSpace(Model.veriableCount))
+                    {
+                        <tr><td>Variable Count (30)</td><td>@Model.veriableCount</td></tr>}
+                    @if (!string.IsNullOrWhiteSpace(Model.netWeight))
+                    {
+                        <tr><td>Net Weight (3102)</td><td>@Model.netWeight</td></tr>}
+                    @if (!string.IsNullOrWhiteSpace(Model.netVolume))
+                    {
+                        <tr><td>Net Volume (3152)</td><td>@Model.netVolume</td></tr>}
+                    @if (!string.IsNullOrWhiteSpace(Model.width))
+                    {
+                        <tr><td>Width (3252)</td><td>@Model.width</td></tr>}
+                    @if (!string.IsNullOrWhiteSpace(Model.netWeightUS))
+                    {
+                        <tr><td>Net Weight US (3562)</td><td>@Model.netWeightUS</td></tr>}
+                    @if (!string.IsNullOrWhiteSpace(Model.netVolumeUS))
+                    {
+                        <tr><td>Net Volume US (3602)</td><td>@Model.netVolumeUS</td></tr>}
+                    @if (!string.IsNullOrWhiteSpace(Model.amaountPayable))
+                    {
+                        <tr><td>Amount Payable (3902)</td><td>@Model.amaountPayable</td></tr>}
+                    @if (!string.IsNullOrWhiteSpace(Model.customerPONumber))
+                    {
+                        <tr><td>Customer PO Number (400)</td><td>@Model.customerPONumber</td></tr>}
+                </tbody>
+            </table>
+
+            <div class="text-end mt-4">
+                <a href="/Home/Index" class="btn btn-primary">🔄 Create Another Label</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function copyGs1() {
+            var copyText = document.getElementById("gs1String");
+            copyText.select();
+            copyText.setSelectionRange(0, 99999); // Mobile
+            document.execCommand("copy");
+            alert("Copied GS1 string!");
+        }
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
