@@ -4,143 +4,362 @@ namespace gs1BarcodeApplication.Models
 {
     public class ProductLabelModel
     {
-        [StringLength(18, ErrorMessage = "SSCC must be 18 characters long.")]
-        [RegularExpression(@"^\d{18}$", ErrorMessage ="SSCC must contain only digits.")]
-        public string sscc { get; set; }                      // (00) Serial Shipping Container Code
-        [Required(ErrorMessage ="GTIN is required.")]
-        [StringLength(14, ErrorMessage ="GTIN must be 14 characters exact.")]
+        // --- Core Identifiers ---
+
+        [Display(Name = "SSCC (00)")]
+        [StringLength(18, MinimumLength = 18, ErrorMessage = "SSCC must be exactly 18 characters long.")]
+        [RegularExpression(@"^\d{18}$", ErrorMessage = "SSCC must contain only digits.")]
+        public string sscc { get; set; }
+
+        [Display(Name = "GTIN (01)")]
+        [Required(ErrorMessage = "GTIN is required.")]
+        [StringLength(14, MinimumLength = 14, ErrorMessage = "GTIN must be exactly 14 digits.")]
         [RegularExpression(@"^\d{14}$", ErrorMessage = "GTIN must contain only digits.")]
-        public string GTIN { get; set; }                      // (01) Global Trade Item Number
-        [StringLength(14, ErrorMessage = "GTIN must be 14 characters exact.")]
-        [RegularExpression(@"^\d{14}$", ErrorMessage = "GTIN must contain only digits.")]
-        public string gtinContained { get; set; }             // (02) GTIN of contained trade items
-        [StringLength(20, ErrorMessage ="Batch lot number can no exceed 20 characters.")]
-        public string batch_lotNumber { get; set; }           // (10) Batch or lot number
-        [RegularExpression(@"^d{6}$", ErrorMessage ="Date must be in YYMMDD format.")]
-        public string productionDate { get; set; }            // (11) Production date (YYMMDD)
-        [RegularExpression(@"^d{6}$", ErrorMessage = "Date must be in YYMMDD format.")]
-        public string dueDate { get; set; }                    // (12) Due date (YYMMDD)
-        [RegularExpression(@"^d{6}$", ErrorMessage = "Date must be in YYMMDD format.")]
-        public string packDate { get; set; }                   // (13) Packaging date (YYMMDD)
-        [RegularExpression(@"^d{6}$", ErrorMessage = "Date must be in YYMMDD format.")]
-        public string bestBeforeDate { get; set; }             // (15) Best before date (YYMMDD)
-        [RegularExpression(@"^d{6}$", ErrorMessage = "Date must be in YYMMDD format.")]
-        public string expirationDate { get; set; }             // (17) Expiration date (YYMMDD)
-        [StringLength(2,ErrorMessage ="Maximum 2 digit",MinimumLength =1)]
-        public string productVariant { get; set; }             // (20) Product variant
-        [StringLength(20, ErrorMessage = "Serial number can no exceed 30 characters.")]
-        public string serialNumber { get; set; }               // (21) Serial number
-        [StringLength(18, ErrorMessage = "Healthcare GTIN must be 18 characters long.")]
-        [RegularExpression(@"^d{18}$", ErrorMessage ="GTIN must contain only digits.")]
-        public string healthCareGTIN { get; set; }             // (22) Global Trade Item Number for healthcare trade items
-        [StringLength(30,ErrorMessage ="Maximum 30 character long.")]
-        public string pharmaLotNumber { get; set; }            // (241) Pharma lot number
-        [StringLength(30, ErrorMessage = "Maximum 30 character long.")]
-        public string additionalProductID { get; set; }        // (242) Additional product identification
-        [StringLength(30, ErrorMessage = "Maximum 30 character long.")]
-        public string customerPartNumber { get; set; }         // (243) Customer part number
-        [StringLength(6, ErrorMessage="Maximum 6 digit.")]
-        [RegularExpression("^d+$", ErrorMessage ="Must contain only digits.")]
-        public string madeToOrderVariation { get; set; }       // (250) Made-to-order variation number
-        [StringLength(30, ErrorMessage = "Maximum 30 character long.")]
-        public string secondarySerialNumber { get; set; }      // (251) Secondary serial number
-        [StringLength(30, ErrorMessage = "Maximum 30 character long.")]
-        [RegularExpression(@"^\d{13}[a-zA-Z0-9]{0,17}$", ErrorMessage = "GDTI must start with 13 digits followed by up to 17 alphanumeric characters for the serial component.")]
-        public string gdti { get; set; }                       // (253) Global Document Type Identifier
-        [StringLength(25, ErrorMessage ="Maximum 25 character long.")]
-        public string gcn { get; set; }                         // (255) Global Coupon Number
-        public string variableCount { get; set; }               // (30) Variable measure count
-        public string countContained { get; set; }              // (37) Count of contained trade items
+        public string GTIN { get; set; }
 
-        // Measurements
-        public string netWeightKg { get; set; }                 // (3102) Net weight (kg)
-        public string lengthM { get; set; }                      // (3112) Length (m)
-        public string widthM { get; set; }                       // (3122) Width (m)
-        public string depthM { get; set; }                       // (3132) Depth (m)
-        public string areaSqM { get; set; }                      // (3142) Area (m²)
-        public string netVolumeL { get; set; }                   // (3152) Net volume (L)
-        public string netVolumeM3 { get; set; }                  // (3162) Net volume (m³)
-        public string netWeightLb { get; set; }                  // (3202) Net weight (lbs)
-        public string lengthIn { get; set; }                     // (3212) Length (inches)
-        public string widthIn { get; set; }                      // (3222) Width (inches)
-        public string depthIn { get; set; }                      // (3232) Depth (inches)
-        public string areaSqIn { get; set; }                     // (3242) Area (in²)
-        public string netVolumeUSGal { get; set; }               // (3252) Net volume (US gallons)
-        public string netVolumeCubicIn { get; set; }             // (3262) Net volume (cubic inches)
-        public string grossWeightKg { get; set; }                // (3302) Gross weight (kg)
-        public string lengthGrossM { get; set; }                 // (3312) Gross length (m)
-        public string widthGrossM { get; set; }                  // (3322) Gross width (m)
-        public string depthGrossM { get; set; }                  // (3332) Gross depth (m)
-        public string areaGrossSqM { get; set; }                 // (3342) Gross area (m²)
-        public string grossVolumeL { get; set; }                 // (3352) Gross volume (L)
-        public string grossVolumeM3 { get; set; }                // (3362) Gross volume (m³)
-        public string grossWeightLb { get; set; }                // (3402) Gross weight (lbs)
-        public string lengthGrossIn { get; set; }                // (3412) Gross length (inches)
-        public string widthGrossIn { get; set; }                 // (3422) Gross width (inches)
-        public string depthGrossIn { get; set; }                 // (3432) Gross depth (inches)
-        public string areaGrossSqIn { get; set; }                // (3442) Gross area (in²)
-        public string grossVolumeUSGal { get; set; }             // (3452) Gross volume (US gallons)
-        public string grossVolumeCubicIn { get; set; }           // (3462) Gross volume (cubic inches)
-        public string areaSqFt { get; set; }                      // (3472) Area (ft²)
-        public string lengthFt { get; set; }                       // (3482) Length (ft)
-        public string widthFt { get; set; }                        // (3492) Width (ft)
-        public string depthFt { get; set; }                        // (3502) Depth (ft)
-        public string grossWeightMetricTon { get; set; }          // (3512) Gross weight (metric tons)
-        public string netWeightMetricTon { get; set; }            // (3522) Net weight (metric tons)
-        public string netVolumeCubicFt { get; set; }              // (3532) Net volume (cubic feet)
-        public string netVolumeQt { get; set; }                    // (3542) Net volume (quarts)
-        public string netWeightOz { get; set; }                    // (3552) Net weight (oz)
-        public string netVolumeUSFlOz { get; set; }                // (3562) Net volume (US fluid oz)
-        public string netVolumeImpGal { get; set; }                // (3572) Net volume (imperial gal)
-        public string netVolumeImpFlOz { get; set; }               // (3582) Net volume (imperial fluid oz)
-        public string netVolumeCubicYd { get; set; }               // (3592) Net volume (cubic yards)
-        public string netVolumeUSPint { get; set; }                // (3602) Net volume (US pints)
-        public string netVolumeUSQt { get; set; }                  // (3612) Net volume (US quarts)
-        public string netVolumeImpPint { get; set; }               // (3622) Net volume (imperial pints)
-        public string netVolumeImpQt { get; set; }                 // (3632) Net volume (imperial quarts)
-        public string netVolumeLitPer100Kg { get; set; }           // (3642) Net volume (liters per 100 kg)
+        [Display(Name = "GTIN of Contained Items (02)")]
+        [StringLength(14, MinimumLength = 14, ErrorMessage = "Contained GTIN must be exactly 14 digits.")]
+        [RegularExpression(@"^\d{14}$", ErrorMessage = "Contained GTIN must contain only digits.")]
+        public string gtinContained { get; set; }
 
-        public string numConsumerUnits { get; set; }               // (3900) Number of consumer units
-        public string amountPayable { get; set; }                  // (3902) Amount payable
-        public string amountPayableISO { get; set; }               // (3903) Amount payable with ISO currency
-        public string amountPayableVar { get; set; }               // (3912) Amount payable variable
-        public string amountPayableVarISO { get; set; }            // (3913) Amount payable variable with ISO currency
+        [Display(Name = "Batch / Lot Number (10)")]
+        [StringLength(20, ErrorMessage = "Batch/Lot number cannot exceed 20 characters.")]
+        public string batch_lotNumber { get; set; }
 
-        public string customerPONumber { get; set; }                // (400) Customer purchase order number
-        public string consignmentNumber { get; set; }              // (401) Consignment number
-        public string gsin { get; set; }                            // (402) Global Shipment Identification Number
-        public string routingCode { get; set; }                     // (403) Routing code
-        public string shipTo { get; set; }                          // (410) Ship to party
-        public string billTo { get; set; }                          // (411) Bill to party
-        public string purchaseFrom { get; set; }                    // (412) Purchase from party
-        public string forwardTo { get; set; }                        // (413) Forward to party
-        public string physicalLoc { get; set; }                     // (414) Physical location
-        public string invoicingParty { get; set; }                  // (415) Invoicing party
-        public string shipToPost { get; set; }                       // (420) Ship to postal code
-        public string shipToPostWithIso { get; set; }               // (421) Ship to postal code with ISO country code
-        [StringLength(3,ErrorMessage ="Must be country ISO code.")]
-        [RegularExpression(@"^d{3}", ErrorMessage ="Maximum 3 digit long.")]
-        public string origin { get; set; }                           // (422) Country of origin
-        [StringLength(3, ErrorMessage = "Must be country ISO code.")]
-        [RegularExpression(@"^d{3}", ErrorMessage = "Maximum 3 digit long.")]
-        public string initialProcessingCountry { get; set; }        // (423) Initial processing country
-        [StringLength(3, ErrorMessage = "Must be country ISO code.")]
-        [RegularExpression(@"^d{3}", ErrorMessage = "Maximum 3 digit long.")]
-        public string processingCountry { get; set; }               // (424) Processing country
-        [StringLength(3, ErrorMessage = "Must be country ISO code.")]
-        [RegularExpression(@"^d{3}", ErrorMessage = "Maximum 3 digit long.")]
-        public string disassemblyCountry { get; set; }              // (425) Disassembly country
-        [StringLength(3, ErrorMessage = "Must be country ISO code.")]
-        [RegularExpression(@"^d{3}", ErrorMessage = "Maximum 3 digit long.")]
-        public string fullProcessCountry { get; set; }              // (426) Full process country
-        [RegularExpression(@"^d{6}$", ErrorMessage = "Date must be in YYMMDD format.")]
-        public string expirationDateTime { get; set; }              // (427) Expiration date/time
+        // --- Dates (All YYMMDD) ---
 
-        public string componentStructure { get; set; }              // (7001) Component/part structure
-        public string prodUrl { get; set; }                          // (8001) Production URL
-        public string prodCharacteristics { get; set; }             // (8002) Product characteristics
-        public string healthcareClass { get; set; }                  // (8018) Healthcare class
-        public string prodDataStatus { get; set; }                   // (8020) Product data status
-        public string shelfLifeDuration { get; set; }                // (8100) Shelf life duration
+        [Display(Name = "Production Date (11)")]
+        [RegularExpression(@"^\d{6}$", ErrorMessage = "Production Date must be in YYMMDD format.")]
+        public string productionDate { get; set; }
+
+        [Display(Name = "Due Date (12)")]
+        [RegularExpression(@"^\d{6}$", ErrorMessage = "Due Date must be in YYMMDD format.")]
+        public string dueDate { get; set; }
+
+        [Display(Name = "Packaging Date (13)")]
+        [RegularExpression(@"^\d{6}$", ErrorMessage = "Packaging Date must be in YYMMDD format.")]
+        public string packDate { get; set; }
+
+        [Display(Name = "Best Before Date (15)")]
+        [RegularExpression(@"^\d{6}$", ErrorMessage = "Best Before Date must be in YYMMDD format.")]
+        public string bestBeforeDate { get; set; }
+
+        [Display(Name = "Expiration Date (17)")]
+        [RegularExpression(@"^\d{6}$", ErrorMessage = "Expiration Date must be in YYMMDD format.")]
+        public string expirationDate { get; set; }
+
+        // --- Other Identifiers ---
+
+        [Display(Name = "Product Variant (20)")]
+        [RegularExpression(@"^\d{2}$", ErrorMessage = "Product Variant must be exactly 2 digits.")]
+        public string productVariant { get; set; }
+
+        [Display(Name = "Serial Number (21)")]
+        [StringLength(20, ErrorMessage = "Serial number cannot exceed 20 characters.")]
+        public string serialNumber { get; set; }
+
+        [Display(Name = "Healthcare GTIN (22)")]
+        [StringLength(18, MinimumLength = 18, ErrorMessage = "Healthcare GTIN must be 18 characters long.")]
+        [RegularExpression(@"^\d{18}$", ErrorMessage = "Healthcare GTIN must contain only digits.")]
+        public string healthCareGTIN { get; set; }
+
+        [Display(Name = "Pharma Lot Number (241)")]
+        [StringLength(30, ErrorMessage = "Pharma Lot Number cannot exceed 30 characters.")]
+        public string pharmaLotNumber { get; set; }
+
+        [Display(Name = "Additional Product ID (242)")]
+        [StringLength(30, ErrorMessage = "Additional Product ID cannot exceed 30 characters.")]
+        public string additionalProductID { get; set; }
+
+        [Display(Name = "Customer Part Number (243)")]
+        [StringLength(30, ErrorMessage = "Customer Part Number cannot exceed 30 characters.")]
+        public string customerPartNumber { get; set; }
+
+        [Display(Name = "Made-to-Order Variation (250)")]
+        [RegularExpression(@"^\d{1,6}$", ErrorMessage = "Made-to-Order Variation must be up to 6 digits.")]
+        public string madeToOrderVariation { get; set; }
+
+        [Display(Name = "Secondary Serial Number (251)")]
+        [StringLength(30, ErrorMessage = "Secondary Serial Number cannot exceed 30 characters.")]
+        public string secondarySerialNumber { get; set; }
+
+        [Display(Name = "Global Document Type Identifier (253)")]
+        [RegularExpression(@"^\d{13}[a-zA-Z0-9]{0,17}$", ErrorMessage = "GDTI must be 13 digits + up to 17 alphanumeric chars.")]
+        public string gdti { get; set; }
+
+        [Display(Name = "Global Coupon Number (255)")]
+        [RegularExpression(@"^\d{13,25}$", ErrorMessage = "GCN must be between 13 and 25 digits.")]
+        public string gcn { get; set; }
+
+        [Display(Name = "Variable Count (30)")]
+        [RegularExpression(@"^\d{1,8}$", ErrorMessage = "Variable Count must be up to 8 digits.")]
+        public string variableCount { get; set; }
+
+        [Display(Name = "Count of Contained Items (37)")]
+        [RegularExpression(@"^\d{1,8}$", ErrorMessage = "Count of Contained Items must be up to 8 digits.")]
+        public string countContained { get; set; }
+
+        // --- All Measurements ---
+        private const string MeasurementRegex = @"^\d{6}$";
+        private const string MeasurementError = "Measurement value must be 6 digits.";
+
+        [Display(Name = "Net Weight (kg) (3102)")]
+        [RegularExpression(MeasurementRegex, ErrorMessage = MeasurementError)]
+        public string netWeightKg { get; set; }
+
+        [Display(Name = "Length (m) (3112)")]
+        [RegularExpression(MeasurementRegex, ErrorMessage = MeasurementError)]
+        public string lengthM { get; set; }
+
+        [Display(Name = "Width (m) (3122)")]
+        [RegularExpression(MeasurementRegex, ErrorMessage = MeasurementError)]
+        public string widthM { get; set; }
+
+        [Display(Name = "Depth (m) (3132)")]
+        public string depthM { get; set; }
+
+        [Display(Name = "Area (m²) (3142)")]
+        public string areaSqM { get; set; }
+
+        [Display(Name = "Net Volume (L) (3152)")]
+        public string netVolumeL { get; set; }
+
+        [Display(Name = "Net Volume (m³) (3162)")]
+        public string netVolumeM3 { get; set; }
+
+        [Display(Name = "Net Weight (lbs) (3202)")]
+        public string netWeightLb { get; set; }
+
+        [Display(Name = "Length (in) (3212)")]
+        public string lengthIn { get; set; }
+
+        [Display(Name = "Width (in) (3222)")]
+        public string widthIn { get; set; }
+
+        [Display(Name = "Depth (in) (3232)")]
+        public string depthIn { get; set; }
+
+        [Display(Name = "Area (in²) (3242)")]
+        public string areaSqIn { get; set; }
+
+        [Display(Name = "Net Volume (US gal) (3252)")]
+        public string netVolumeUSGal { get; set; }
+
+        [Display(Name = "Net Volume (cubic in) (3262)")]
+        public string netVolumeCubicIn { get; set; }
+
+        [Display(Name = "Gross Weight (kg) (3302)")]
+        public string grossWeightKg { get; set; }
+
+        [Display(Name = "Gross Length (m) (3312)")]
+        public string lengthGrossM { get; set; }
+
+        [Display(Name = "Gross Width (m) (3322)")]
+        public string widthGrossM { get; set; }
+
+        [Display(Name = "Gross Depth (m) (3332)")]
+        public string depthGrossM { get; set; }
+
+        [Display(Name = "Gross Area (m²) (3342)")]
+        public string areaGrossSqM { get; set; }
+
+        [Display(Name = "Gross Volume (L) (3352)")]
+        public string grossVolumeL { get; set; }
+
+        [Display(Name = "Gross Volume (m³) (3362)")]
+        public string grossVolumeM3 { get; set; }
+
+        [Display(Name = "Gross Weight (lbs) (3402)")]
+        public string grossWeightLb { get; set; }
+
+        [Display(Name = "Gross Length (in) (3412)")]
+        public string lengthGrossIn { get; set; }
+
+        [Display(Name = "Gross Width (in) (3422)")]
+        public string widthGrossIn { get; set; }
+
+        [Display(Name = "Gross Depth (in) (3432)")]
+        public string depthGrossIn { get; set; }
+
+        [Display(Name = "Gross Area (in²) (3442)")]
+        public string areaGrossSqIn { get; set; }
+
+        [Display(Name = "Gross Volume (US gal) (3452)")]
+        public string grossVolumeUSGal { get; set; }
+
+        [Display(Name = "Gross Volume (cubic in) (3462)")]
+        public string grossVolumeCubicIn { get; set; }
+
+        [Display(Name = "Area (ft²) (3472)")]
+        public string areaSqFt { get; set; }
+
+        [Display(Name = "Length (ft) (3482)")]
+        public string lengthFt { get; set; }
+
+        [Display(Name = "Width (ft) (3492)")]
+        public string widthFt { get; set; }
+
+        [Display(Name = "Depth (ft) (3502)")]
+        public string depthFt { get; set; }
+
+        [Display(Name = "Gross Weight (metric tons) (3512)")]
+        public string grossWeightMetricTon { get; set; }
+
+        [Display(Name = "Net Weight (metric tons) (3522)")]
+        public string netWeightMetricTon { get; set; }
+
+        [Display(Name = "Net Volume (cubic ft) (3532)")]
+        public string netVolumeCubicFt { get; set; }
+
+        [Display(Name = "Net Volume (quarts) (3542)")]
+        public string netVolumeQt { get; set; }
+
+        [Display(Name = "Net Weight (oz) (3552)")]
+        public string netWeightOz { get; set; }
+
+        [Display(Name = "Net Volume (US fluid oz) (3562)")]
+        public string netVolumeUSFlOz { get; set; }
+
+        [Display(Name = "Net Volume (imperial gal) (3572)")]
+        public string netVolumeImpGal { get; set; }
+
+        [Display(Name = "Net Volume (imperial fluid oz) (3582)")]
+        public string netVolumeImpFlOz { get; set; }
+
+        [Display(Name = "Net Volume (cubic yards) (3592)")]
+        public string netVolumeCubicYd { get; set; }
+
+        [Display(Name = "Net Volume (US pints) (3602)")]
+        public string netVolumeUSPint { get; set; }
+
+        [Display(Name = "Net Volume (US quarts) (3612)")]
+        public string netVolumeUSQt { get; set; }
+
+        [Display(Name = "Net Volume (imperial pints) (3622)")]
+        public string netVolumeImpPint { get; set; }
+
+        [Display(Name = "Net Volume (imperial quarts) (3632)")]
+        public string netVolumeImpQt { get; set; }
+
+        [Display(Name = "Net Volume (liters per 100 kg) (3642)")]
+        public string netVolumeLitPer100Kg { get; set; }
+
+        // --- Amounts and Counts ---
+        [Display(Name = "Number of Consumer Units (3900)")]
+        [RegularExpression(@"^\d{1,15}$", ErrorMessage = "Number of consumer units must be numeric.")]
+        public string numConsumerUnits { get; set; }
+
+        [Display(Name = "Amount Payable (3902)")]
+        public string amountPayable { get; set; }
+        [Display(Name = "Amount Payable with ISO Currency (3903)")]
+        public string amountPayableISO { get; set; }
+        [Display(Name = "Amount Payable Variable (3912)")]
+        public string amountPayableVar { get; set; }
+        [Display(Name = "Amount Payable Variable with ISO Currency (3913)")]
+        public string amountPayableVarISO { get; set; }
+
+        // --- Logistics and Party Information ---
+        [Display(Name = "Customer PO Number (400)")]
+        [StringLength(30, ErrorMessage = "Customer PO Number cannot exceed 30 characters.")]
+        public string customerPONumber { get; set; }
+
+        [Display(Name = "Consignment Number (401)")]
+        [StringLength(30, ErrorMessage = "Consignment Number cannot exceed 30 characters.")]
+        public string consignmentNumber { get; set; }
+
+        [Display(Name = "Global Shipment Identification Number (402)")]
+        [RegularExpression(@"^\d{17}$", ErrorMessage = "GSIN must be 17 digits.")]
+        public string gsin { get; set; }
+
+        [Display(Name = "Routing Code (403)")]
+        [StringLength(30, ErrorMessage = "Routing Code cannot exceed 30 characters.")]
+        public string routingCode { get; set; }
+
+        private const string GlnRegex = @"^\d{13}$";
+        private const string GlnError = "GLN (Global Location Number) must be 13 digits.";
+
+        [Display(Name = "Ship To (GLN) (410)")]
+        [RegularExpression(GlnRegex, ErrorMessage = GlnError)]
+        public string shipTo { get; set; }
+
+        [Display(Name = "Bill To (GLN) (411)")]
+        [RegularExpression(GlnRegex, ErrorMessage = GlnError)]
+        public string billTo { get; set; }
+
+        [Display(Name = "Purchase From (GLN) (412)")]
+        [RegularExpression(GlnRegex, ErrorMessage = GlnError)]
+        public string purchaseFrom { get; set; }
+
+        [Display(Name = "Forward To (GLN) (413)")]
+        [RegularExpression(GlnRegex, ErrorMessage = GlnError)]
+        public string forwardTo { get; set; }
+
+        [Display(Name = "Physical Location (GLN) (414)")]
+        [RegularExpression(GlnRegex, ErrorMessage = GlnError)]
+        public string physicalLoc { get; set; }
+
+        [Display(Name = "Invoicing Party (GLN) (415)")]
+        [RegularExpression(GlnRegex, ErrorMessage = GlnError)]
+        public string invoicingParty { get; set; }
+
+        [Display(Name = "Ship To Postal Code (420)")]
+        [StringLength(20, ErrorMessage = "Postal Code cannot exceed 20 characters.")]
+        public string shipToPost { get; set; }
+
+        [Display(Name = "Ship To Postal Code with ISO (421)")]
+        public string shipToPostWithIso { get; set; }
+
+        // --- Country Codes (3 digits numeric) ---
+        private const string CountryCodeRegex = @"^\d{3}$";
+        private const string CountryCodeError = "Country code must be 3 digits (ISO 3166-1 numeric).";
+
+        [Display(Name = "Country of Origin (422)")]
+        [RegularExpression(CountryCodeRegex, ErrorMessage = CountryCodeError)]
+        public string origin { get; set; }
+
+        [Display(Name = "Initial Processing Country (423)")]
+        [RegularExpression(CountryCodeRegex, ErrorMessage = CountryCodeError)]
+        public string initialProcessingCountry { get; set; }
+
+        [Display(Name = "Processing Country (424)")]
+        [RegularExpression(CountryCodeRegex, ErrorMessage = CountryCodeError)]
+        public string processingCountry { get; set; }
+
+        [Display(Name = "Disassembly Country (425)")]
+        [RegularExpression(CountryCodeRegex, ErrorMessage = CountryCodeError)]
+        public string disassemblyCountry { get; set; }
+
+        [Display(Name = "Full Process Country (426)")]
+        [RegularExpression(CountryCodeRegex, ErrorMessage = CountryCodeError)]
+        public string fullProcessCountry { get; set; }
+
+        [Display(Name = "Expiration Date/Time (427)")]
+        [RegularExpression(@"^\d{10}$", ErrorMessage = "Expiration Date/Time must be in YYMMDDHHMM format (10 digits).")]
+        public string expirationDateTime { get; set; }
+
+        // --- Other Information ---
+        [Display(Name = "Component/Part Structure (7001)")]
+        [StringLength(30)]
+        public string componentStructure { get; set; }
+
+        [Display(Name = "Production URL (8001)")]
+        [StringLength(200)]
+        public string prodUrl { get; set; }
+
+        [Display(Name = "Product Characteristics (8002)")]
+        [StringLength(30)]
+        public string prodCharacteristics { get; set; }
+
+        [Display(Name = "Healthcare Class (8018)")]
+        [StringLength(30)]
+        public string healthcareClass { get; set; }
+
+        [Display(Name = "Product Data Status (8020)")]
+        [StringLength(30)]
+        public string prodDataStatus { get; set; }
+
+        [Display(Name = "Shelf Life Duration (days) (8100)")]
+        [RegularExpression(@"^\d{1,6}$", ErrorMessage = "Shelf life duration must be up to 6 digits representing days.")]
+        public string shelfLifeDuration { get; set; }
     }
 }
