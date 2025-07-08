@@ -1,0 +1,475 @@
+﻿@model gs1BarcodeApplication.Models.ProductLabelModel
+@{
+    ViewBag.Title = "GS1 Label Result";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>GS1 Barcode Result</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .barcode-img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .copy-btn {
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <div class="card shadow-sm p-4">
+            <h2 class="mb-4">✅ GS1 Barcode Generated</h2>
+            <div class="row text-center mb-4">
+                <div class="col-md-6">
+                    <p><strong>Barcode</strong></p>
+                    <img src="@ViewBag.BarcodeImage" class="img-thumbnail" alt="GS1 Barcode" />
+                </div>
+                <div class="col-md-6">
+                    <p><strong>QR Code</strong></p>
+                    <img src="@ViewBag.QrImage" class="img-thumbnail" alt="GS1 QR Code" />
+                </div>
+            </div>
+
+
+            <div class="mb-3">
+                <label class="form-label fw-bold">GS1 String</label>
+                <div class="input-group">
+                    <input type="text" class="form-control" id="gs1String" value="@ViewBag.Gs1String" readonly>
+                    <button class="btn btn-outline-secondary" type="button" onclick="copyGs1()">📋 Copy</button>
+                </div>
+            </div>
+            <form method="post" action="/Home/ExportPdf">
+                <input type="hidden" name="gs1String" value="@ViewBag.GS1String" />
+                <input type="hidden" name="barcodeBase64" value="@ViewBag.BarcodeImage" />
+                <input type="hidden" name="qrBase64" value="@ViewBag.QrImage" />
+                <button type="submit" class="btn btn-primary mt-3">Download PDF</button>
+            </form>
+
+
+
+            <h5 class="mt-4">📋 Field Summary</h5>
+            <table class="table table-bordered table-sm mt-2">
+                <thead class="table-light">
+                    <tr>
+                        <th>Field</th>
+                        <th>Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!string.IsNullOrWhiteSpace(Model.sscc))
+                    {
+                        <tr><td>SSCC (00)</td><td>@Model.sscc</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.GTIN))
+                    {
+                        <tr><td>GTIN (01)</td><td>@Model.GTIN</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.gtinContained))
+                    {
+                        <tr><td>GTIN Contained (02)</td><td>@Model.gtinContained</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.batch_lotNumber))
+                    {
+                        <tr><td>Batch / Lot Number (10)</td><td>@Model.batch_lotNumber</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.productionDate))
+                    {
+                        <tr><td>Production Date (11)</td><td>@Model.productionDate</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.dueDate))
+                    {
+                        <tr><td>Due Date (12)</td><td>@Model.dueDate</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.packDate))
+                    {
+                        <tr><td>Packaging Date (13)</td><td>@Model.packDate</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.bestBeforeDate))
+                    {
+                        <tr><td>Best Before Date (15)</td><td>@Model.bestBeforeDate</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.expirationDate))
+                    {
+                        <tr><td>Expiration Date (17)</td><td>@Model.expirationDate</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.productVariant))
+                    {
+                        <tr><td>Product Variant (20)</td><td>@Model.productVariant</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.serialNumber))
+                    {
+                        <tr><td>Serial Number (21)</td><td>@Model.serialNumber</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.healthCareGTIN))
+                    {
+                        <tr><td>Healthcare GTIN (22)</td><td>@Model.healthCareGTIN</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.pharmaLotNumber))
+                    {
+                        <tr><td>Pharma Lot Number (241)</td><td>@Model.pharmaLotNumber</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.additionalProductID))
+                    {
+                        <tr><td>Additional Product ID (242)</td><td>@Model.additionalProductID</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.customerPartNumber))
+                    {
+                        <tr><td>Customer Part Number (243)</td><td>@Model.customerPartNumber</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.madeToOrderVariation))
+                    {
+                        <tr><td>Made-to-Order Variation (250)</td><td>@Model.madeToOrderVariation</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.secondarySerialNumber))
+                    {
+                        <tr><td>Secondary Serial Number (251)</td><td>@Model.secondarySerialNumber</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.gdti))
+                    {
+                        <tr><td>Global Document Type Identifier (253)</td><td>@Model.gdti</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.gcn))
+                    {
+                        <tr><td>Global Coupon Number (255)</td><td>@Model.gcn</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.variableCount))
+                    {
+                        <tr><td>Variable Count (30)</td><td>@Model.variableCount</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.countContained))
+                    {
+                        <tr><td>Count Contained (37)</td><td>@Model.countContained</td></tr>
+                    }
+                    @* Measurements *@
+                    @if (!string.IsNullOrWhiteSpace(Model.netWeightKg))
+                    {
+                        <tr><td>Net Weight (kg) (3102)</td><td>@Model.netWeightKg</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.lengthM))
+                    {
+                        <tr><td>Length (m) (3112)</td><td>@Model.lengthM</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.widthM))
+                    {
+                        <tr><td>Width (m) (3122)</td><td>@Model.widthM</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.depthM))
+                    {
+                        <tr><td>Depth (m) (3132)</td><td>@Model.depthM</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.areaSqM))
+                    {
+                        <tr><td>Area (m²) (3142)</td><td>@Model.areaSqM</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.netVolumeL))
+                    {
+                        <tr><td>Net Volume (L) (3152)</td><td>@Model.netVolumeL</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.netVolumeM3))
+                    {
+                        <tr><td>Net Volume (m³) (3162)</td><td>@Model.netVolumeM3</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.netWeightLb))
+                    {
+                        <tr><td>Net Weight (lbs) (3202)</td><td>@Model.netWeightLb</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.lengthIn))
+                    {
+                        <tr><td>Length (inches) (3212)</td><td>@Model.lengthIn</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.widthIn))
+                    {
+                        <tr><td>Width (inches) (3222)</td><td>@Model.widthIn</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.depthIn))
+                    {
+                        <tr><td>Depth (inches) (3232)</td><td>@Model.depthIn</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.areaSqIn))
+                    {
+                        <tr><td>Area (in²) (3242)</td><td>@Model.areaSqIn</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.netVolumeUSGal))
+                    {
+                        <tr><td>Net Volume (US gallons) (3252)</td><td>@Model.netVolumeUSGal</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.netVolumeCubicIn))
+                    {
+                        <tr><td>Net Volume (cubic inches) (3262)</td><td>@Model.netVolumeCubicIn</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.grossWeightKg))
+                    {
+                        <tr><td>Gross Weight (kg) (3302)</td><td>@Model.grossWeightKg</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.lengthGrossM))
+                    {
+                        <tr><td>Gross Length (m) (3312)</td><td>@Model.lengthGrossM</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.widthGrossM))
+                    {
+                        <tr><td>Gross Width (m) (3322)</td><td>@Model.widthGrossM</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.depthGrossM))
+                    {
+                        <tr><td>Gross Depth (m) (3332)</td><td>@Model.depthGrossM</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.areaGrossSqM))
+                    {
+                        <tr><td>Gross Area (m²) (3342)</td><td>@Model.areaGrossSqM</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.grossVolumeL))
+                    {
+                        <tr><td>Gross Volume (L) (3352)</td><td>@Model.grossVolumeL</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.grossVolumeM3))
+                    {
+                        <tr><td>Gross Volume (m³) (3362)</td><td>@Model.grossVolumeM3</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.grossWeightLb))
+                    {
+                        <tr><td>Gross Weight (lbs) (3402)</td><td>@Model.grossWeightLb</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.lengthGrossIn))
+                    {
+                        <tr><td>Gross Length (inches) (3412)</td><td>@Model.lengthGrossIn</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.widthGrossIn))
+                    {
+                        <tr><td>Gross Width (inches) (3422)</td><td>@Model.widthGrossIn</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.depthGrossIn))
+                    {
+                        <tr><td>Gross Depth (inches) (3432)</td><td>@Model.depthGrossIn</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.areaGrossSqIn))
+                    {
+                        <tr><td>Gross Area (in²) (3442)</td><td>@Model.areaGrossSqIn</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.grossVolumeUSGal))
+                    {
+                        <tr><td>Gross Volume (US gallons) (3452)</td><td>@Model.grossVolumeUSGal</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.grossVolumeCubicIn))
+                    {
+                        <tr><td>Gross Volume (cubic inches) (3462)</td><td>@Model.grossVolumeCubicIn</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.areaSqFt))
+                    {
+                        <tr><td>Area (ft²) (3472)</td><td>@Model.areaSqFt</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.lengthFt))
+                    {
+                        <tr><td>Length (ft) (3482)</td><td>@Model.lengthFt</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.widthFt))
+                    {
+                        <tr><td>Width (ft) (3492)</td><td>@Model.widthFt</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.depthFt))
+                    {
+                        <tr><td>Depth (ft) (3502)</td><td>@Model.depthFt</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.grossWeightMetricTon))
+                    {
+                        <tr><td>Gross Weight (metric tons) (3512)</td><td>@Model.grossWeightMetricTon</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.netWeightMetricTon))
+                    {
+                        <tr><td>Net Weight (metric tons) (3522)</td><td>@Model.netWeightMetricTon</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.netVolumeCubicFt))
+                    {
+                        <tr><td>Net Volume (cubic feet) (3532)</td><td>@Model.netVolumeCubicFt</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.netVolumeQt))
+                    {
+                        <tr><td>Net Volume (quarts) (3542)</td><td>@Model.netVolumeQt</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.netWeightOz))
+                    {
+                        <tr><td>Net Weight (oz) (3552)</td><td>@Model.netWeightOz</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.netVolumeUSFlOz))
+                    {
+                        <tr><td>Net Volume (US fluid oz) (3562)</td><td>@Model.netVolumeUSFlOz</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.netVolumeImpGal))
+                    {
+                        <tr><td>Net Volume (imperial gal) (3572)</td><td>@Model.netVolumeImpGal</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.netVolumeImpFlOz))
+                    {
+                        <tr><td>Net Volume (imperial fluid oz) (3582)</td><td>@Model.netVolumeImpFlOz</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.netVolumeCubicYd))
+                    {
+                        <tr><td>Net Volume (cubic yards) (3592)</td><td>@Model.netVolumeCubicYd</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.netVolumeUSPint))
+                    {
+                        <tr><td>Net Volume (US pints) (3602)</td><td>@Model.netVolumeUSPint</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.netVolumeUSQt))
+                    {
+                        <tr><td>Net Volume (US quarts) (3612)</td><td>@Model.netVolumeUSQt</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.netVolumeImpPint))
+                    {
+                        <tr><td>Net Volume (imperial pints) (3622)</td><td>@Model.netVolumeImpPint</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.netVolumeImpQt))
+                    {
+                        <tr><td>Net Volume (imperial quarts) (3632)</td><td>@Model.netVolumeImpQt</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.netVolumeLitPer100Kg))
+                    {
+                        <tr><td>Net Volume (liters per 100 kg) (3642)</td><td>@Model.netVolumeLitPer100Kg</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.numConsumerUnits))
+                    {
+                        <tr><td>Number of Consumer Units (3900)</td><td>@Model.numConsumerUnits</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.amountPayable))
+                    {
+                        <tr><td>Amount Payable (3902)</td><td>@Model.amountPayable</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.amountPayableISO))
+                    {
+                        <tr><td>Amount Payable with ISO Currency (3903)</td><td>@Model.amountPayableISO</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.amountPayableVar))
+                    {
+                        <tr><td>Amount Payable Variable (3912)</td><td>@Model.amountPayableVar</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.amountPayableVarISO))
+                    {
+                        <tr><td>Amount Payable Variable with ISO Currency (3913)</td><td>@Model.amountPayableVarISO</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.customerPONumber))
+                    {
+                        <tr><td>Customer PO Number (400)</td><td>@Model.customerPONumber</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.consignmentNumber))
+                    {
+                        <tr><td>Consignment Number (401)</td><td>@Model.consignmentNumber</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.gsin))
+                    {
+                        <tr><td>Global Shipment Identification Number (402)</td><td>@Model.gsin</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.routingCode))
+                    {
+                        <tr><td>Routing Code (403)</td><td>@Model.routingCode</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.shipTo))
+                    {
+                        <tr><td>Ship To Party (410)</td><td>@Model.shipTo</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.billTo))
+                    {
+                        <tr><td>Bill To Party (411)</td><td>@Model.billTo</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.purchaseFrom))
+                    {
+                        <tr><td>Purchase From Party (412)</td><td>@Model.purchaseFrom</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.forwardTo))
+                    {
+                        <tr><td>Forward To Party (413)</td><td>@Model.forwardTo</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.physicalLoc))
+                    {
+                        <tr><td>Physical Location (414)</td><td>@Model.physicalLoc</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.invoicingParty))
+                    {
+                        <tr><td>Invoicing Party (415)</td><td>@Model.invoicingParty</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.shipToPost))
+                    {
+                        <tr><td>Ship To Postal Code (420)</td><td>@Model.shipToPost</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.shipToPostWithIso))
+                    {
+                        <tr><td>Ship To Postal Code with ISO Country Code (421)</td><td>@Model.shipToPostWithIso</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.origin))
+                    {
+                        <tr><td>Country of Origin (422)</td><td>@Model.origin</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.initialProcessingCountry))
+                    {
+                        <tr><td>Initial Processing Country (423)</td><td>@Model.initialProcessingCountry</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.processingCountry))
+                    {
+                        <tr><td>Processing Country (424)</td><td>@Model.processingCountry</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.disassemblyCountry))
+                    {
+                        <tr><td>Disassembly Country (425)</td><td>@Model.disassemblyCountry</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.fullProcessCountry))
+                    {
+                        <tr><td>Full Process Country (426)</td><td>@Model.fullProcessCountry</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.expirationDateTime))
+                    {
+                        <tr><td>Expiration Date/Time (427)</td><td>@Model.expirationDateTime</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.componentStructure))
+                    {
+                        <tr><td>Component/Part Structure (7001)</td><td>@Model.componentStructure</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.prodUrl))
+                    {
+                        <tr><td>Production URL (8001)</td><td>@Model.prodUrl</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.prodCharacteristics))
+                    {
+                        <tr><td>Product Characteristics (8002)</td><td>@Model.prodCharacteristics</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.healthcareClass))
+                    {
+                        <tr><td>Healthcare Class (8018)</td><td>@Model.healthcareClass</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.prodDataStatus))
+                    {
+                        <tr><td>Product Data Status (8020)</td><td>@Model.prodDataStatus</td></tr>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.shelfLifeDuration))
+                    {
+                        <tr><td>Shelf Life Duration (8100)</td><td>@Model.shelfLifeDuration</td></tr>
+                    }
+                </tbody>
+            </table>
+
+            <div class="text-end mt-4">
+                <a href="/Home/Index" class="btn btn-primary">🔄 Create Another Label</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function copyGs1() {
+            var copyText = document.getElementById("gs1String");
+            copyText.select();
+            copyText.setSelectionRange(0, 99999); // Mobile
+            document.execCommand("copy");
+            alert("Copied GS1 string!");
+        }
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,627 @@
+﻿﻿@model List<gs1BarcodeApplication.Models.ProductLabelModel>
+@{
+    ViewBag.Title = "GS1 Generator";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+
+    <meta charset="utf-8" />
+    <title>GS1 Label Generator</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+    <style>
+        body.dark-mode {
+            background-color: #121212 !important;
+            color: #e0e0e0 !important;
+        }
+
+            body.dark-mode .card {
+                background-color: #1e1e1e !important;
+                color: #e0e0e0 !important;
+            }
+
+            body.dark-mode .form-control {
+                background-color: #333 !important;
+                color: #eee !important;
+                border-color: #555 !important;
+            }
+
+            body.dark-mode .btn-outline-primary,
+            body.dark-mode .btn-outline-success,
+            body.dark-mode .btn-secondary {
+                color: #bbb !important;
+                border-color: #666 !important;
+            }
+
+                body.dark-mode .btn-outline-primary:hover,
+                body.dark-mode .btn-outline-success:hover,
+                body.dark-mode .btn-secondary:hover {
+                    background-color: #444 !important;
+                    border-color: #888 !important;
+                }
+
+        /* Custom centering styles */
+        .form-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .field-row {
+            justify-content: center;
+            align-items: center;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        #inputList {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .field-row {
+            max-width: 800px;
+            width: 100%;
+        }
+    </style>
+
+</head>
+<body class="bg-light">
+    <div class="container py-5">
+        <div class="card shadow p-4 position-relative">
+            <!-- Dark Mode Button in top-right corner of the card -->
+            <button id="darkModeToggle"
+                    class="btn btn-sm btn-outline-secondary position-absolute"
+                    style="top: 1rem; right: 1rem;">
+                🌙 Toggle
+            </button>
+
+            <h2 class="mb-4 text-center">📦 Dynamic GS1 Label Builder</h2>
+
+            <div class="form-container">
+                <div class="mb-3 d-flex justify-content-center">
+                    <select id="presetSelector" class="form-select w-auto" aria-label="Select label preset">
+                        <option value="">-- Select a Label Template --</option>
+                        <option value="pharma">💊 Pharma Label</option>
+                        <option value="food">🍅 Food Label</option>
+                        <option value="logistics">🚛 Logistics Label</option>
+                        <option value="textile">👕 Textile Label</option>
+                    </select>
+                </div>
+                <form method="post" action="/Home/Submit" id="gs1Form" novalidate>
+                    <div id="inputList" class="mb-4"></div>
+
+                    <div class="button-container mb-3">
+                        <button id="addBtn" type="button" class="btn btn-outline-primary" onclick="addField()">➕ Add Field</button>
+                        <button type="submit" class="btn btn-outline-success">✅ Submit</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let counter = 0;
+        const usedFields = new Set();
+
+
+        const gs1Options = [
+            // --- Core Identifiers ---
+            { text: "Serial Shipping Container Code (SSCC) (00)", value: "sscc", tooltip: "Logistics unit unique ID (18 digits, numeric)" },
+            { text: "Global Trade Item Number (GTIN) (01)", value: "GTIN", tooltip: "Product identifier (14 digits, numeric)" },
+            { text: "GTIN of Contained Trade Items (02)", value: "gtinContained", tooltip: "Contained item GTIN (14 digits, numeric)" },
+            { text: "Batch/Lot Number (10)", value: "batch_lotNumber", tooltip: "Batch or lot number (up to 20 alphanumeric)" },
+            { text: "Production Date (11)", value: "productionDate", tooltip: "Production date (YYMMDD, 6 digits)" },
+            { text: "Due Date (12)", value: "dueDate", tooltip: "Due date (YYMMDD, 6 digits)" },
+            { text: "Packaging Date (13)", value: "packDate", tooltip: "Packaging date (YYMMDD, 6 digits)" },
+            { text: "Best Before Date (15)", value: "bestBeforeDate", tooltip: "Best before date (YYMMDD, 6 digits)" },
+            { text: "Expiration Date (17)", value: "expirationDate", tooltip: "Expiration date (YYMMDD, 6 digits)" },
+            { text: "Product Variant (20)", value: "productVariant", tooltip: "Product variant (2 digits numeric)" },
+            { text: "Serial Number (21)", value: "serialNumber", tooltip: "Unique serial number (up to 20 alphanumeric)" },
+            { text: "Health Care GTIN (22)", value: "healthCareGTIN", tooltip: "Healthcare GTIN (up to 18 digits numeric)" },
+            { text: "Pharma Lot Number (241)", value: "pharmaLotNumber", tooltip: "Pharma lot number (up to 30 alphanumeric)" },
+            { text: "Additional Product ID (242)", value: "additionalProductID", tooltip: "Additional product ID (up to 30 alphanumeric)" },
+            { text: "Customer Part Number (243)", value: "customerPartNumber", tooltip: "Customer part number (up to 30 alphanumeric)" },
+            { text: "Made-to-Order Variation Number (250)", value: "madeToOrderVariation", tooltip: "Custom variation number (up to 6 digits numeric)" },
+            { text: "Secondary Serial Number (251)", value: "secondarySerialNumber", tooltip: "Additional serial number (up to 30 alphanumeric)" },
+            { text: "Global Document Type Identifier (GDTI) (253)", value: "gdti", tooltip: "Document ID (13 digits + up to 17 alphanumeric)" },
+            { text: "Global Coupon Number (GCN) (255)", value: "gcn", tooltip: "Coupon number (13 digits + up to 12 digits numeric)" },
+            { text: "Variable Measure Count (30)", value: "variableCount", tooltip: "Number of trade items (up to 8 digits numeric)" },
+            { text: "Count of Contained Trade Items (37)", value: "countContained", tooltip: "Items contained (up to 8 digits numeric)" },
+
+            // --- Measurements (Net, Metric) ---
+            { text: "Net Weight (kg) (3102)", value: "netWeightKg", tooltip: "Net weight in kg (6 digits, 2 decimal places)" },
+            { text: "Length (m) (3112)", value: "lengthM", tooltip: "Length in meters (6 digits, 2 decimal places)" },
+            { text: "Width (m) (3122)", value: "widthM", tooltip: "Width in meters (6 digits, 2 decimal places)" },
+            { text: "Depth (m) (3132)", value: "depthM", tooltip: "Depth in meters (6 digits, 2 decimal places)" },
+            { text: "Area (m²) (3142)", value: "areaSqM", tooltip: "Area in square meters (6 digits, 2 decimal places)" },
+            { text: "Net Volume (L) (3152)", value: "netVolumeL", tooltip: "Net volume in liters (6 digits, 2 decimal places)" },
+            { text: "Net Volume (m³) (3162)", value: "netVolumeM3", tooltip: "Net volume in cubic meters (6 digits, 2 decimal places)" },
+
+            // --- Measurements (Net, Imperial) ---
+            { text: "Net Weight (lb) (3202)", value: "netWeightLb", tooltip: "Net weight in pounds (6 digits, 2 decimal places)" },
+            { text: "Length (in) (3212)", value: "lengthIn", tooltip: "Length in inches (6 digits, 2 decimal places)" },
+            { text: "Width (in) (3222)", value: "widthIn", tooltip: "Width in inches (6 digits, 2 decimal places)" },
+            { text: "Depth (in) (3232)", value: "depthIn", tooltip: "Depth in inches (6 digits, 2 decimal places)" },
+            { text: "Area (in²) (3242)", value: "areaSqIn", tooltip: "Area in square inches (6 digits, 2 decimal places)" },
+            { text: "Net Volume (US gal) (3252)", value: "netVolumeUSGal", tooltip: "Net volume in US gallons (6 digits, 2 decimal places)" },
+            { text: "Net Volume (cubic in) (3262)", value: "netVolumeCubicIn", tooltip: "Net volume in cubic inches (6 digits, 2 decimal places)" },
+
+            // --- Measurements (Gross, Metric) ---
+            { text: "Gross Weight (kg) (3302)", value: "grossWeightKg", tooltip: "Gross weight in kilograms (6 digits, 2 decimal places)" },
+            { text: "Gross Length (m) (3312)", value: "lengthGrossM", tooltip: "Gross length in meters (6 digits, 2 decimal places)" },
+            { text: "Gross Width (m) (3322)", value: "widthGrossM", tooltip: "Gross width in meters (6 digits, 2 decimal places)" },
+            { text: "Gross Depth (m) (3332)", value: "depthGrossM", tooltip: "Gross depth in meters (6 digits, 2 decimal places)" },
+            { text: "Gross Area (m²) (3342)", value: "areaGrossSqM", tooltip: "Gross area in square meters (6 digits, 2 decimal places)" },
+            { text: "Gross Volume (L) (3352)", value: "grossVolumeL", tooltip: "Gross volume in liters (6 digits, 2 decimal places)" },
+            { text: "Gross Volume (m³) (3362)", value: "grossVolumeM3", tooltip: "Gross volume in cubic meters (6 digits, 2 decimal places)" },
+
+            // --- Measurements (Gross, Imperial) ---
+            { text: "Gross Weight (lb) (3402)", value: "grossWeightLb", tooltip: "Gross weight in pounds (6 digits, 2 decimal places)" },
+            { text: "Gross Length (in) (3412)", value: "lengthGrossIn", tooltip: "Gross length in inches (6 digits, 2 decimal places)" },
+            { text: "Gross Width (in) (3422)", value: "widthGrossIn", tooltip: "Gross width in inches (6 digits, 2 decimal places)" },
+            { text: "Gross Depth (in) (3432)", value: "depthGrossIn", tooltip: "Gross depth in inches (6 digits, 2 decimal places)" },
+            { text: "Gross Area (in²) (3442)", value: "areaGrossSqIn", tooltip: "Gross area in square inches (6 digits, 2 decimal places)" },
+            { text: "Gross Volume (US gal) (3452)", value: "grossVolumeUSGal", tooltip: "Gross volume in US gallons (6 digits, 2 decimal places)" },
+            { text: "Gross Volume (cubic in) (3462)", value: "grossVolumeCubicIn", tooltip: "Gross volume in cubic inches (6 digits, 2 decimal places)" },
+
+            // --- Other Measurements ---
+            { text: "Area (ft²) (3472)", value: "areaSqFt", tooltip: "Area in square feet (6 digits, 2 decimal places)" },
+            { text: "Length (ft) (3482)", value: "lengthFt", tooltip: "Length in feet (6 digits, 2 decimal places)" },
+            { text: "Width (ft) (3492)", value: "widthFt", tooltip: "Width in feet (6 digits, 2 decimal places)" },
+            { text: "Depth (ft) (3502)", value: "depthFt", tooltip: "Depth in feet (6 digits, 2 decimal places)" },
+            { text: "Gross Weight, Metric Tons (3512)", value: "grossWeightMetricTon", tooltip: "Gross weight in metric tons (6 digits, 2 decimal places)" },
+            { text: "Net Weight, Metric Tons (3522)", value: "netWeightMetricTon", tooltip: "Net weight in metric tons (6 digits, 2 decimal places)" },
+            { text: "Net Volume, Cubic Feet (3532)", value: "netVolumeCubicFt", tooltip: "Net volume in cubic feet (6 digits, 2 decimal places)" },
+            { text: "Net Volume, Quarts (3542)", value: "netVolumeQt", tooltip: "Net volume in quarts (6 digits, 2 decimal places)" },
+            { text: "Net Weight, Ounces (3552)", value: "netWeightOz", tooltip: "Net weight in ounces (6 digits, 2 decimal places)" },
+            { text: "Net Volume, US Fluid Ounces (3562)", value: "netVolumeUSFlOz", tooltip: "Net volume in US fluid ounces (6 digits, 2 decimal places)" },
+            { text: "Net Volume, Imperial Gallons (3572)", value: "netVolumeImpGal", tooltip: "Net volume in imperial gallons (6 digits, 2 decimal places)" },
+            { text: "Net Volume, Imperial Fluid Ounces (3582)", value: "netVolumeImpFlOz", tooltip: "Net volume in imperial fluid ounces (6 digits, 2 decimal places)" },
+            { text: "Net Volume, Cubic Yards (3592)", value: "netVolumeCubicYd", tooltip: "Net volume in cubic yards (6 digits, 2 decimal places)" },
+            { text: "Net Volume, US Pints (3602)", value: "netVolumeUSPint", tooltip: "Net volume in US pints (6 digits, 2 decimal places)" },
+            { text: "Net Volume, US Quarts (3612)", value: "netVolumeUSQt", tooltip: "Net volume in US quarts (6 digits, 2 decimal places)" },
+            { text: "Net Volume, Imperial Pints (3622)", value: "netVolumeImpPint", tooltip: "Net volume in imperial pints (6 digits, 2 decimal places)" },
+            { text: "Net Volume, Imperial Quarts (3632)", value: "netVolumeImpQt", tooltip: "Net volume in imperial quarts (6 digits, 2 decimal places)" },
+            { text: "Net Volume, Liters Per 100 kg (3642)", value: "netVolumeLitPer100Kg", tooltip: "Net volume liters per 100 kg (6 digits, 2 decimal places)" },
+
+            // --- Amounts and Consumer Units ---
+            { text: "Number of Consumer Units (3900)", value: "numConsumerUnits", tooltip: "Number of consumer units (up to 8 digits numeric)" },
+            { text: "Amount Payable (3902)", value: "amountPayable", tooltip: "Amount payable, no currency code (up to 15 digits, 2 decimal places)" },
+            { text: "Amount Payable with ISO Currency (3903)", value: "amountPayableISO", tooltip: "Amount payable with 3-digit ISO currency code" },
+            { text: "Amount Payable, Variable (3912)", value: "amountPayableVar", tooltip: "Amount payable (no currency), variable measure" },
+            { text: "Amount Payable, Variable with ISO (3913)", value: "amountPayableVarISO", tooltip: "Amount payable with ISO code, variable measure" },
+
+            // --- Logistics and Party Information ---
+            { text: "Customer Purchase Order Number (400)", value: "customerPONumber", tooltip: "Customer PO number (up to 30 alphanumeric)" },
+            { text: "Consignment Number (401)", value: "consignmentNumber", tooltip: "Consignment number (up to 30 alphanumeric)" },
+            { text: "Global Shipment ID (GSIN) (402)", value: "gsin", tooltip: "Shipment ID (17 digits numeric)" },
+            { text: "Routing Code (403)", value: "routingCode", tooltip: "Routing code (up to 30 alphanumeric)" },
+            { text: "GLN - Ship To (410)", value: "shipTo", tooltip: "Delivery location GLN (13 digits numeric)" },
+            { text: "GLN - Bill To (411)", value: "billTo", tooltip: "Billing location GLN (13 digits numeric)" },
+            { text: "GLN - Purchase From (412)", value: "purchaseFrom", tooltip: "Purchasing party GLN (13 digits numeric)" },
+            { text: "GLN - Forward To (413)", value: "forwardTo", tooltip: "Forwarding location GLN (13 digits numeric)" },
+            { text: "GLN - Physical Location (414)", value: "physicalLoc", tooltip: "General physical location GLN (13 digits numeric)" },
+            { text: "GLN - Invoicing Party (415)", value: "invoicingParty", tooltip: "Invoicing party GLN (13 digits numeric)" },
+            { text: "Ship To Postal Code (420)", value: "shipToPost", tooltip: "Postal code (up to 20 alphanumeric)" },
+            { text: "Ship To Postal Code with ISO (421)", value: "shipToPostWithIso", tooltip: "Postal code + ISO country code" },
+            { text: "Country of Origin (422)", value: "origin", tooltip: "Country of origin ISO code (3 digits numeric)" },
+            { text: "Initial Processing Country (423)", value: "initialProcessingCountry", tooltip: "Countries of initial processing (ISO codes)" },
+            { text: "Processing Country (424)", value: "processingCountry", tooltip: "Country of processing (ISO code)" },
+            { text: "Disassembly Country (425)", value: "disassemblyCountry", tooltip: "Country of disassembly (ISO code)" },
+            { text: "Full Process Country (426)", value: "fullProcessCountry", tooltip: "Country of full process chain (ISO code)" },
+            { text: "Expiration Date/Time (427)", value: "expirationDateTime", tooltip: "Expiration date and time (YYMMDDHH, 8 digits)" },
+
+            // --- Additional Information ---
+            { text: "Component/Part Structure (7001)", value: "componentStructure", tooltip: "Component structuring number (up to 30 alphanumeric)" },
+            { text: "Production URL (8001)", value: "prodUrl", tooltip: "Product information URL (up to 200 characters)" },
+            { text: "Product Characteristics (8002)", value: "prodCharacteristics", tooltip: "Product characteristics (up to 50 alphanumeric)" },
+            { text: "Healthcare Class (8018)", value: "healthcareClass", tooltip: "Healthcare classification codes (up to 20 alphanumeric)" },
+            { text: "Product Data Status (8020)", value: "prodDataStatus", tooltip: "Product data status (up to 20 alphanumeric)" },
+            { text: "Shelf Life Duration (8100)", value: "shelfLifeDuration", tooltip: "Shelf life in days (up to 6 digits)" },
+        ];
+
+        const presets = {
+            pharma: [
+                "GTIN",
+                "batch_lotNumber",
+                "productionDate",
+                "expirationDate",
+                "serialNumber"
+            ],
+            food: [
+                "GTIN",
+                "batch_lotNumber",
+                "bestBeforeDate",
+                "netWeightKg",
+                "netVolume"
+            ],
+            logistics: [
+                "GTIN",
+                "serialNumber",
+                "variableCount",
+                "netWeightKg",
+                "customerPONumber"
+            ],
+            textile: [
+                "GTIN",
+                "gtinContained",
+                "batch_lotNumber",
+                "productionDate",
+                "packDate",
+                "serialNumber",
+                "additionalProductID",
+                "customerPartNumber",
+                "madeToOrderVariation",
+                "variableCount",
+                "countContained",
+                "netWeightKg",
+                "lengthM",
+                "widthM",
+                "depthM",
+                "areaSqM",
+                "netWeightLb",
+                "lengthIn",
+                "widthIn",
+                "depthIn",
+                "areaSqIn",
+                "customerPONumber",
+                "gsin",
+                "shipTo",
+                "origin",
+                "initialProcessingCountry",
+                "processingCountry",
+                "disassemblyCountry",
+                "fullProcessCountry"
+            ]
+        };
+
+        const fieldValidationRules = {
+            // --- Core Identifiers ---
+            sscc: { pattern: /^\d{18}$/, message: "SSCC must be exactly 18 digits." },
+            GTIN: { customValidator: validateGTIN, message: "Invalid GTIN. Check length (8, 12, 13, 14) and check digit." },
+            gtinContained: { customValidator: validateGTIN, message: "Invalid GTIN. Check length (8, 12, 13, 14) and check digit." },
+            batch_lotNumber: { pattern: /^[a-zA-Z0-9-]{1,20}$/, message: "Batch/Lot must be 1-20 alphanumeric characters." },
+            serialNumber: { pattern: /^[a-zA-Z0-9]{1,20}$/, message: "Serial Number must be 1-20 alphanumeric characters." },
+
+            // --- Date Fields (Using your custom validator) ---
+            productionDate: { customValidator: isValidYYMMDD, message: "Date must be a valid YYMMDD date." },
+            dueDate: { customValidator: isValidYYMMDD, message: "Date must be a valid YYMMDD date." },
+            packDate: { customValidator: isValidYYMMDD, message: "Date must be a valid YYMMDD date." },
+            bestBeforeDate: { customValidator: isValidYYMMDD, message: "Date must be a valid YYMMDD date." },
+            expirationDate: { customValidator: isValidYYMMDD, message: "Date must be a valid YYMMDD date." },
+            expirationDateTime: { pattern: /^\d{8}$/, message: "Date/Time must be in YYMMDDHH format (8 digits)." },
+
+            // --- Variable Length Alphanumeric ---
+            pharmaLotNumber: { pattern: /^[a-zA-Z0-9]{1,30}$/, message: "Pharma Lot must be 1-30 alphanumeric characters." },
+            additionalProductID: { pattern: /^[a-zA-Z0-9]{1,30}$/, message: "ID must be 1-30 alphanumeric characters." },
+            customerPartNumber: { pattern: /^[a-zA-Z0-9-]{1,30}$/, message: "Part Number must be 1-30 alphanumeric characters or hyphens." },
+            customerPONumber: { pattern: /^[a-zA-Z0-9-]{1,30}$/, message: "PO Number must be 1-30 alphanumeric characters or hyphens." },
+            consignmentNumber: { pattern: /^[a-zA-Z0-9]{1,30}$/, message: "Consignment Number must be 1-30 alphanumeric characters." },
+            routingCode: { pattern: /^[a-zA-Z0-9]{1,30}$/, message: "Routing Code must be 1-30 alphanumeric characters." },
+            shipToPost: { pattern: /^[a-zA-Z0-9- ]{1,20}$/, message: "Postal Code must be 1-20 characters." },
+            componentStructure: { pattern: /^[a-zA-Z0-9]{1,30}$/, message: "Must be 1-30 alphanumeric characters." },
+            prodCharacteristics: { pattern: /^[a-zA-Z0-9 ]{1,50}$/, message: "Must be 1-50 alphanumeric characters." },
+            healthcareClass: { pattern: /^[a-zA-Z0-9]{1,20}$/, message: "Must be 1-20 alphanumeric characters." },
+            prodDataStatus: { pattern: /^[a-zA-Z0-9]{1,20}$/, message: "Must be 1-20 alphanumeric characters." },
+
+            // --- URL ---
+            prodUrl: { maxLength: 200, message: "URL cannot exceed 200 characters." },
+
+            // --- Strictly Numeric Fields (Fixed/Max Length) ---
+            productVariant: { pattern: /^\d{2}$/, message: "Must be exactly 2 digits." },
+            madeToOrderVariation: { pattern: /^\d{1,6}$/, message: "Must be 1-6 digits." },
+            gsin: { pattern: /^\d{17}$/, message: "GSIN must be exactly 17 digits." },
+            shipTo: { pattern: /^\d{13}$/, message: "GLN must be exactly 13 digits." },
+            billTo: { pattern: /^\d{13}$/, message: "GLN must be exactly 13 digits." },
+            purchaseFrom: { pattern: /^\d{13}$/, message: "GLN must be exactly 13 digits." },
+            forwardTo: { pattern: /^\d{13}$/, message: "GLN must be exactly 13 digits." },
+            physicalLoc: { pattern: /^\d{13}$/, message: "GLN must be exactly 13 digits." },
+            invoicingParty: { pattern: /^\d{13}$/, message: "GLN must be exactly 13 digits." },
+            origin: { pattern: /^\d{3}$/, message: "Country code must be a 3-digit number." },
+            shelfLifeDuration: { pattern: /^\d{1,6}$/, message: "Must be 1-6 digits." },
+
+            // --- Numeric Count/Amount Fields (Variable Length) ---
+            variableCount: { pattern: /^\d{1,8}$/, message: "Must be a number up to 8 digits." },
+            countContained: { pattern: /^\d{1,8}$/, message: "Must be a number up to 8 digits." },
+            numConsumerUnits: { pattern: /^\d{1,8}$/, message: "Must be a number up to 8 digits." },
+        };
+
+        function addField() {
+            if (usedFields.size === gs1Options.length) {
+                alert("All GS1 fields have been used.");
+                return;
+            }
+            const dropdowns = document.querySelectorAll('select');
+            for (let d of dropdowns) {
+                if (!d.value) {
+                    alert("Please select a GS1 field before adding a new one.");
+                    return;
+                }
+            }
+
+            const div = document.createElement('div');
+            div.className = "row g-2 align-items-center mb-3 field-row";
+            div.setAttribute('data-index', counter);
+
+            const availableOptions = gs1Options.filter(opt => !usedFields.has(opt.value));
+
+            const selectHTML = `
+                    <div class="col-md-5">
+                        <select class="form-select" name="inputs[${counter}].Field"
+                                onchange="onFieldChange(this, ${counter})"
+                                data-bs-toggle="tooltip" title="Select a GS1 field">
+                            <option value="">Select GS1 Field</option>
+                            ${availableOptions.map(opt =>
+                    `<option value="${opt.value}" title="${opt.tooltip}">${opt.text}</option>`).join('')}
+                        </select>
+                    </div>
+                `;
+
+            const inputHTML = `
+                    <div class="col-md-5">
+                        <input type="text"
+                               class="form-control"
+                               name="inputs[${counter}].Value"
+                               placeholder="Enter value"
+                               disabled
+                               oninput="validateInput(this, '')"
+                               data-field="" />
+                        <small class="text-danger validation-msg" style="display:none"></small>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="button" class="btn btn-outline-danger" onclick="removeField(this)">Remove</button>
+                    </div>
+                `;
+
+            div.innerHTML = selectHTML + inputHTML;
+            document.getElementById("inputList").appendChild(div);
+
+            const newTooltip = div.querySelector('[data-bs-toggle="tooltip"]');
+            new bootstrap.Tooltip(newTooltip);
+
+            counter++;
+            updateAddButtonState();
+        }
+
+        function validateGTIN(gtin) {
+            if (!/^\d{8}$|^\d{12}$|^\d{13}$|^\d{14}$/.test(gtin)) {
+                return false;
+            }
+
+            const a = gtin.slice(0, -1).split('').map(char => parseInt(char, 10));
+            const checkDigit = parseInt(gtin.slice(-1), 10);
+
+            let sum = 0;
+            // The weighting pattern (3,1,3,1...) is always applied from right-to-left.
+            // Reversing the array makes the logic simpler.
+            a.reverse().forEach((digit, i) => {
+                sum += digit * (i % 2 === 0 ? 3 : 1);
+            });
+
+            const calculatedCheckDigit = (10 - (sum % 10)) % 10;
+            return checkDigit === calculatedCheckDigit;
+        }
+
+        /**
+         * Validates that a string is a real date in YYMMDD format.
+         */
+        function isValidYYMMDD(value) {
+            if (!/^\d{6}$/.test(value)) return false;
+
+            const year = parseInt(value.slice(0, 2), 10) + 2000; // Assuming 21st century
+            const month = parseInt(value.slice(2, 4), 10);
+            const day = parseInt(value.slice(4, 6), 10);
+
+            if (month < 1 || month > 12) return false;
+
+            // JS Date month is 0-indexed, so month-1
+            const lastDayOfMonth = new Date(year, month, 0).getDate();
+            if (day < 1 || day > lastDayOfMonth) return false;
+
+            return true;
+        }
+
+        function validateInput(input, fieldName) {
+            const value = input.value.trim();
+            const msg = input.parentNode.querySelector('.validation-msg');
+            const rules = fieldValidationRules[fieldName];
+
+            // If there's no rule for this field, assume it's valid.
+            if (!rules && !fieldName.match(/^(net|gross|length|width|depth|area)/i)) {
+                msg.style.display = "none";
+                input.classList.remove("is-invalid");
+                return;
+            }
+
+            let isValid = true;
+            let validationMessage = "Invalid format.";
+
+            if (rules) {
+                validationMessage = rules.message || validationMessage;
+                if (rules.customValidator) {
+                    isValid = rules.customValidator(value);
+                } else if (rules.pattern) {
+                    isValid = rules.pattern.test(value);
+                } else if (rules.maxLength && value.length > rules.maxLength) {
+                    isValid = false;
+                }
+            }
+
+            // Apply a generic decimal check for any measurement fields without a specific rule
+            if (!rules && fieldName.match(/^(net|gross|length|width|depth|area)/i)) {
+                isValid = /^\d{1,6}(\.\d{1,2})?$/.test(value); // e.g. 123456.12
+                validationMessage = "Must be a number (up to 6 digits, 2 decimal places).";
+            }
+
+            if (!isValid) {
+                msg.innerText = validationMessage;
+                msg.style.display = "block";
+                input.classList.add("is-invalid");
+            } else {
+                msg.style.display = "none";
+                input.classList.remove("is-invalid");
+            }
+        }
+
+        function onFieldChange(select, index) {
+            const value = select.value;
+            const prevField = select.getAttribute('data-prev');
+            const input = select.parentNode.nextElementSibling.querySelector('input');
+            const msg = select.parentNode.nextElementSibling.querySelector('.validation-msg');
+
+            if (prevField) usedFields.delete(prevField);
+            if (value) {
+                usedFields.add(value);
+                input.disabled = false;
+                input.setAttribute("data-field", value);
+                input.oninput = () => validateInput(input, value);
+            } else {
+                input.disabled = true;
+                input.removeAttribute("data-field");
+                msg.style.display = "none";
+            }
+
+            select.setAttribute('data-prev', value);
+            updateAddButtonState();
+        }
+
+        function removeField(btn) {
+            const div = btn.closest('.row');
+            const field = div.querySelector('select').value;
+            if (field) usedFields.delete(field);
+            div.remove();
+            updateAddButtonState();
+        }
+
+        function updateAddButtonState() {
+            const allFieldsSelected = Array.from(document.querySelectorAll('select'))
+                .every(sel => sel.value !== "");
+
+            document.getElementById('addBtn').disabled = !allFieldsSelected || usedFields.size === gs1Options.length;
+        }
+
+
+        document.getElementById('gs1Form').addEventListener('submit', function (e) {
+            let isFormValid = true;
+            const inputs = document.querySelectorAll('#inputList input[data-field]');
+
+            if (inputs.length === 0) {
+                e.preventDefault();
+                alert('Please add at least one field to generate a label.');
+                return;
+            }
+
+            for (let input of inputs) {
+                const fieldName = input.getAttribute('data-field');
+                // Run validation on all fields before submitting
+                validateInput(input, fieldName);
+
+                if (input.classList.contains('is-invalid') || input.value.trim() === '') {
+                    isFormValid = false;
+                }
+            }
+
+            if (!isFormValid) {
+                e.preventDefault();
+                alert('Please fix all invalid or empty fields before submitting.');
+            }
+        });
+
+        const toggleBtn = document.getElementById('darkModeToggle');
+
+        function setDarkMode(enabled) {
+            if (enabled) {
+                document.body.classList.add('dark-mode');
+                localStorage.setItem('darkMode', 'true');
+                toggleBtn.textContent = '☀️ Light Mode';
+            } else {
+                document.body.classList.remove('dark-mode');
+                localStorage.setItem('darkMode', 'false');
+                toggleBtn.textContent = '🌙 Dark Mode';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const darkModePref = localStorage.getItem('darkMode') === 'true';
+            setDarkMode(darkModePref);
+
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+                new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        });
+
+        toggleBtn.addEventListener('click', () => {
+            setDarkMode(!document.body.classList.contains('dark-mode'));
+        });
+
+        document.getElementById('presetSelector').addEventListener('change', function () {
+            const preset = this.value;
+            if (!preset) return;
+
+            
+            const inputList = document.getElementById('inputList');
+            inputList.innerHTML = "";
+            usedFields.clear();
+            counter = 0;
+
+            presets[preset].forEach(fieldValue => {
+                const div = document.createElement('div');
+                div.className = "row g-2 align-items-center mb-3 field-row";
+                div.setAttribute('data-index', counter);
+
+                usedFields.add(fieldValue); 
+
+                const availableOptions = gs1Options.filter(opt => !usedFields.has(opt.value) || opt.value === fieldValue);
+
+                const selectHTML = `
+                        <div class="col-md-5">
+                            <select class="form-select" name="inputs[${counter}].Field"
+                                    onchange="onFieldChange(this, ${counter})"
+                                    data-bs-toggle="tooltip" title="Select a GS1 field" data-prev="${fieldValue}">
+                                <option value="">Select GS1 Field</option>
+                                ${availableOptions.map(opt =>
+                        `<option value="${opt.value}" ${opt.value === fieldValue ? 'selected' : ''}>${opt.text}</option>`).join('')}
+                            </select>
+                        </div>
+                    `;
+
+                const inputHTML = `
+                        <div class="col-md-5">
+                            <input type="text"
+                                   class="form-control"
+                                   name="inputs[${counter}].Value"
+                                   placeholder="Enter value"
+                                   data-field="${fieldValue}"
+                                   oninput="validateInput(this, '${fieldValue}')" />
+                            <small class="text-danger validation-msg" style="display:none"></small>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="button" class="btn btn-outline-danger" onclick="removeField(this)">Remove</button>
+                        </div>
+                    `;
+
+                div.innerHTML = selectHTML + inputHTML;
+                inputList.appendChild(div);
+                new bootstrap.Tooltip(div.querySelector('[data-bs-toggle="tooltip"]'));
+
+                counter++;
+            });
+
+            updateAddButtonState();
+
+        });
+
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
