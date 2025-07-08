@@ -210,6 +210,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
+    <Folder Include="images\" />
     <Folder Include="Views\GS1\" />
   </ItemGroup>
   <ItemGroup>
