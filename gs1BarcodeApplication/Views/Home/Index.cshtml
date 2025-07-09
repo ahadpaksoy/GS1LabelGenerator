@@ -1,4 +1,4 @@
-﻿@model List<gs1BarcodeApplication.Models.ProductLabelModel>
+﻿﻿@model List<gs1BarcodeApplication.Models.ProductLabelModel>
 @{
     ViewBag.Title = "GS1 Generator";
     Layout = null;
@@ -7,14 +7,14 @@
 <!DOCTYPE html>
 <html>
 <head>
+
     <meta charset="utf-8" />
-    <title>GS1 Label Generator</title>
-    <link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
     <link rel="manifest" href="/site.webmanifest">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+
     <style>
         body.dark-mode {
             background-color: #121212 !important;
@@ -26,22 +26,27 @@
                 color: #e0e0e0 !important;
             }
 
-            body.dark-mode .form-control, body.dark-mode .form-control:read-only {
+            body.dark-mode .form-control {
                 background-color: #333 !important;
                 color: #eee !important;
                 border-color: #555 !important;
             }
 
-            body.dark-mode .btn-outline-primary, body.dark-mode .btn-outline-success, body.dark-mode .btn-secondary, body.dark-mode .btn-outline-info {
+            body.dark-mode .btn-outline-primary,
+            body.dark-mode .btn-outline-success,
+            body.dark-mode .btn-secondary {
                 color: #bbb !important;
                 border-color: #666 !important;
             }
 
-                body.dark-mode .btn-outline-primary:hover, body.dark-mode .btn-outline-success:hover, body.dark-mode .btn-secondary:hover, body.dark-mode .btn-outline-info:hover {
+                body.dark-mode .btn-outline-primary:hover,
+                body.dark-mode .btn-outline-success:hover,
+                body.dark-mode .btn-secondary:hover {
                     background-color: #444 !important;
                     border-color: #888 !important;
                 }
 
+        /* Custom centering styles */
         .form-container {
             max-width: 900px;
             margin: 0 auto;
@@ -50,8 +55,12 @@
         .field-row {
             justify-content: center;
             align-items: center;
-            max-width: 800px;
-            width: 100%;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
         }
 
         #inputList {
@@ -60,67 +69,56 @@
             align-items: center;
         }
 
-        #gs1StringPreview {
-            white-space: pre-wrap;
-            word-break: break-all;
+        .field-row {
+            max-width: 800px;
+            width: 100%;
         }
     </style>
+
 </head>
 <body class="bg-light">
     <div class="container py-5">
         <div class="card shadow p-4 position-relative">
-            <button id="darkModeToggle" class="btn btn-sm btn-outline-secondary position-absolute" style="top: 1rem; right: 1rem;">
-                🌙
+            <!-- Dark Mode Button in top-right corner of the card -->
+            <button id="darkModeToggle"
+                    class="btn btn-sm btn-outline-secondary position-absolute"
+                    style="top: 1rem; right: 1rem;">
+                🌙 Toggle
             </button>
-            <h2 class="mb-4 text-center">📦 GS1 Label Builder</h2>
+
+            <h2 class="mb-4 text-center">📦 Dynamic GS1 Label Builder</h2>
+
             <div class="form-container">
-                <div class="mb-3 d-flex justify-content-center align-items-center gap-3">
-                    <select id="presetSelector" class="form-select w-auto">
-                        <option value="">-- Select a Template --</option>
-                        @if (ViewBag.Presets != null)
-                        {
-                            foreach (var preset in (Dictionary<string, List<string>>)ViewBag.Presets)
-                            {
-                                <option value="@preset.Key">@preset.Key</option>
-                            }
-                        }
+                <div class="mb-3 d-flex justify-content-center">
+                    <select id="presetSelector" class="form-select w-auto" aria-label="Select label preset">
+                        <option value="">-- Select a Label Template --</option>
+                        <option value="pharma">💊 Pharma Label</option>
+                        <option value="food">🍅 Food Label</option>
+                        <option value="logistics">🚛 Logistics Label</option>
+                        <option value="textile">👕 Textile Label</option>
                     </select>
-                    <span>OR</span>
-                    <label for="jsonUpload" class="btn btn-outline-info btn-sm">Upload File</label>
-                    <input type="file" id="jsonUpload" accept=".json" style="display: none;" />
                 </div>
                 <form method="post" action="/Home/Submit" id="gs1Form" novalidate>
                     <div id="inputList" class="mb-4"></div>
-                    <div class="text-center mb-3">
-                        <button type="submit" class="btn btn-outline-success">✅ Generate Label & PDF</button>
+
+                    <div class="button-container mb-3">
+                        <button id="addBtn" type="button" class="btn btn-outline-primary" onclick="addField()">➕ Add Field</button>
+                        <button type="submit" class="btn btn-outline-success">✅ Submit</button>
                     </div>
                 </form>
-                <hr />
-                <div id="previewSection" style="display: none;">
-                    <h4 class="text-center">Live Preview</h4>
-                    <div class="row mt-3 align-items-center">
-                        <div class="col-md-8">
-                            <strong>GS1 String:</strong>
-                            <pre id="gs1StringPreview" class="p-2 border rounded"></pre>
-                        </div>
-                        <div class="col-md-4 text-center">
-                            <strong>QR Code:</strong>
-                            <div id="qrCodePreview" class="p-2 border rounded d-inline-block bg-white"></div>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
 
     <script>
-        // --- DATA AND CONFIGURATION ---
         let counter = 0;
-        let qrCodeInstance = null;
+        const usedFields = new Set();
+
+
         const gs1Options = [
             // --- Core Identifiers ---
             { text: "Serial Shipping Container Code (SSCC) (00)", value: "sscc", tooltip: "Logistics unit unique ID (18 digits, numeric)" },
-            { text: "Global Trade Item Number GTIN (01)", value: "GTIN", tooltip: "Product identifier (14 digits, numeric)" },
+            { text: "Global Trade Item Number (GTIN) (01)", value: "GTIN", tooltip: "Product identifier (14 digits, numeric)" },
             { text: "GTIN of Contained Trade Items (02)", value: "gtinContained", tooltip: "Contained item GTIN (14 digits, numeric)" },
             { text: "Batch/Lot Number (10)", value: "batch_lotNumber", tooltip: "Batch or lot number (up to 20 alphanumeric)" },
             { text: "Production Date (11)", value: "productionDate", tooltip: "Production date (YYMMDD, 6 digits)" },
@@ -232,61 +230,240 @@
             { text: "Product Data Status (8020)", value: "prodDataStatus", tooltip: "Product data status (up to 20 alphanumeric)" },
             { text: "Shelf Life Duration (8100)", value: "shelfLifeDuration", tooltip: "Shelf life in days (up to 6 digits)" },
         ];
-        const presets = @Html.Raw(Json.Encode(ViewBag.Presets ?? new Dictionary<string, List<string>>()));
 
-        // --- VALIDATION RULES (RESTORED) ---
+        const presets = {
+            pharma: [
+                "GTIN",
+                "batch_lotNumber",
+                "productionDate",
+                "expirationDate",
+                "serialNumber"
+            ],
+            food: [
+                "GTIN",
+                "batch_lotNumber",
+                "bestBeforeDate",
+                "netWeightKg",
+                "netVolume"
+            ],
+            logistics: [
+                "GTIN",
+                "serialNumber",
+                "variableCount",
+                "netWeightKg",
+                "customerPONumber"
+            ],
+            textile: [
+                "GTIN",
+                "gtinContained",
+                "batch_lotNumber",
+                "productionDate",
+                "packDate",
+                "serialNumber",
+                "additionalProductID",
+                "customerPartNumber",
+                "madeToOrderVariation",
+                "variableCount",
+                "countContained",
+                "netWeightKg",
+                "lengthM",
+                "widthM",
+                "depthM",
+                "areaSqM",
+                "netWeightLb",
+                "lengthIn",
+                "widthIn",
+                "depthIn",
+                "areaSqIn",
+                "customerPONumber",
+                "gsin",
+                "shipTo",
+                "origin",
+                "initialProcessingCountry",
+                "processingCountry",
+                "disassemblyCountry",
+                "fullProcessCountry"
+            ]
+        };
+
         const fieldValidationRules = {
+            // --- Core Identifiers ---
             sscc: { pattern: /^\d{18}$/, message: "SSCC must be exactly 18 digits." },
-            GTIN: { customValidator: validateGTIN, message: "Invalid GTIN. Check length and check digit." },
-            gtinContained: { customValidator: validateGTIN, message: "Invalid GTIN. Check length and check digit." },
-            batch_lotNumber: { pattern: /^[a-zA-Z0-9-]{1,20}$/, message: "Must be 1-20 alphanumeric characters." },
-            serialNumber: { pattern: /^[a-zA-Z0-9]{1,20}$/, message: "Must be 1-20 alphanumeric characters." },
+            GTIN: { customValidator: validateGTIN, message: "Invalid GTIN. Check length (8, 12, 13, 14) and check digit." },
+            gtinContained: { customValidator: validateGTIN, message: "Invalid GTIN. Check length (8, 12, 13, 14) and check digit." },
+            batch_lotNumber: { pattern: /^[a-zA-Z0-9-]{1,20}$/, message: "Batch/Lot must be 1-20 alphanumeric characters." },
+            serialNumber: { pattern: /^[a-zA-Z0-9]{1,20}$/, message: "Serial Number must be 1-20 alphanumeric characters." },
+
+            // --- Date Fields (Using your custom validator) ---
             productionDate: { customValidator: isValidYYMMDD, message: "Date must be a valid YYMMDD date." },
             dueDate: { customValidator: isValidYYMMDD, message: "Date must be a valid YYMMDD date." },
             packDate: { customValidator: isValidYYMMDD, message: "Date must be a valid YYMMDD date." },
             bestBeforeDate: { customValidator: isValidYYMMDD, message: "Date must be a valid YYMMDD date." },
             expirationDate: { customValidator: isValidYYMMDD, message: "Date must be a valid YYMMDD date." },
+            expirationDateTime: { pattern: /^\d{8}$/, message: "Date/Time must be in YYMMDDHH format (8 digits)." },
+
+            // --- Variable Length Alphanumeric ---
+            pharmaLotNumber: { pattern: /^[a-zA-Z0-9]{1,30}$/, message: "Pharma Lot must be 1-30 alphanumeric characters." },
+            additionalProductID: { pattern: /^[a-zA-Z0-9]{1,30}$/, message: "ID must be 1-30 alphanumeric characters." },
+            customerPartNumber: { pattern: /^[a-zA-Z0-9-]{1,30}$/, message: "Part Number must be 1-30 alphanumeric characters or hyphens." },
             customerPONumber: { pattern: /^[a-zA-Z0-9-]{1,30}$/, message: "PO Number must be 1-30 alphanumeric characters or hyphens." },
+            consignmentNumber: { pattern: /^[a-zA-Z0-9]{1,30}$/, message: "Consignment Number must be 1-30 alphanumeric characters." },
+            routingCode: { pattern: /^[a-zA-Z0-9]{1,30}$/, message: "Routing Code must be 1-30 alphanumeric characters." },
+            shipToPost: { pattern: /^[a-zA-Z0-9- ]{1,20}$/, message: "Postal Code must be 1-20 characters." },
+            componentStructure: { pattern: /^[a-zA-Z0-9]{1,30}$/, message: "Must be 1-30 alphanumeric characters." },
+            prodCharacteristics: { pattern: /^[a-zA-Z0-9 ]{1,50}$/, message: "Must be 1-50 alphanumeric characters." },
+            healthcareClass: { pattern: /^[a-zA-Z0-9]{1,20}$/, message: "Must be 1-20 alphanumeric characters." },
+            prodDataStatus: { pattern: /^[a-zA-Z0-9]{1,20}$/, message: "Must be 1-20 alphanumeric characters." },
+
+            // --- URL ---
+            prodUrl: { maxLength: 200, message: "URL cannot exceed 200 characters." },
+
+            // --- Strictly Numeric Fields (Fixed/Max Length) ---
+            productVariant: { pattern: /^\d{2}$/, message: "Must be exactly 2 digits." },
+            madeToOrderVariation: { pattern: /^\d{1,6}$/, message: "Must be 1-6 digits." },
             gsin: { pattern: /^\d{17}$/, message: "GSIN must be exactly 17 digits." },
+            shipTo: { pattern: /^\d{13}$/, message: "GLN must be exactly 13 digits." },
+            billTo: { pattern: /^\d{13}$/, message: "GLN must be exactly 13 digits." },
+            purchaseFrom: { pattern: /^\d{13}$/, message: "GLN must be exactly 13 digits." },
+            forwardTo: { pattern: /^\d{13}$/, message: "GLN must be exactly 13 digits." },
+            physicalLoc: { pattern: /^\d{13}$/, message: "GLN must be exactly 13 digits." },
+            invoicingParty: { pattern: /^\d{13}$/, message: "GLN must be exactly 13 digits." },
+            origin: { pattern: /^\d{3}$/, message: "Country code must be a 3-digit number." },
             shelfLifeDuration: { pattern: /^\d{1,6}$/, message: "Must be 1-6 digits." },
+
+            // --- Numeric Count/Amount Fields (Variable Length) ---
+            variableCount: { pattern: /^\d{1,8}$/, message: "Must be a number up to 8 digits." },
+            countContained: { pattern: /^\d{1,8}$/, message: "Must be a number up to 8 digits." },
+            numConsumerUnits: { pattern: /^\d{1,8}$/, message: "Must be a number up to 8 digits." },
         };
 
-        // --- VALIDATION FUNCTIONS (RESTORED) ---
-        function validateGTIN(gtin) {
-            if (!/^\d{8}$|^\d{12}$|^\d{13}$|^\d{14}$/.test(gtin)) return false;
-            const a = gtin.slice(0, -1).split('').map(char => parseInt(char, 10));
-            const checkDigit = parseInt(gtin.slice(-1), 10);
-            let sum = 0;
-            a.reverse().forEach((digit, i) => { sum += digit * (i % 2 === 0 ? 3 : 1); });
-            return checkDigit === (10 - (sum % 10)) % 10;
+        function addField() {
+            if (usedFields.size === gs1Options.length) {
+                alert("All GS1 fields have been used.");
+                return;
+            }
+            const dropdowns = document.querySelectorAll('select');
+            for (let d of dropdowns) {
+                if (!d.value) {
+                    alert("Please select a GS1 field before adding a new one.");
+                    return;
+                }
+            }
+
+            const div = document.createElement('div');
+            div.className = "row g-2 align-items-center mb-3 field-row";
+            div.setAttribute('data-index', counter);
+
+            const availableOptions = gs1Options.filter(opt => !usedFields.has(opt.value));
+
+            const selectHTML = `
+                    <div class="col-md-5">
+                        <select class="form-select" name="inputs[${counter}].Field"
+                                onchange="onFieldChange(this, ${counter})"
+                                data-bs-toggle="tooltip" title="Select a GS1 field">
+                            <option value="">Select GS1 Field</option>
+                            ${availableOptions.map(opt =>
+                    `<option value="${opt.value}" title="${opt.tooltip}">${opt.text}</option>`).join('')}
+                        </select>
+                    </div>
+                `;
+
+            const inputHTML = `
+                    <div class="col-md-5">
+                        <input type="text"
+                               class="form-control"
+                               name="inputs[${counter}].Value"
+                               placeholder="Enter value"
+                               disabled
+                               oninput="validateInput(this, '')"
+                               data-field="" />
+                        <small class="text-danger validation-msg" style="display:none"></small>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="button" class="btn btn-outline-danger" onclick="removeField(this)">Remove</button>
+                    </div>
+                `;
+
+            div.innerHTML = selectHTML + inputHTML;
+            document.getElementById("inputList").appendChild(div);
+
+            const newTooltip = div.querySelector('[data-bs-toggle="tooltip"]');
+            new bootstrap.Tooltip(newTooltip);
+
+            counter++;
+            updateAddButtonState();
         }
 
+        function validateGTIN(gtin) {
+            if (!/^\d{8}$|^\d{12}$|^\d{13}$|^\d{14}$/.test(gtin)) {
+                return false;
+            }
+
+            const a = gtin.slice(0, -1).split('').map(char => parseInt(char, 10));
+            const checkDigit = parseInt(gtin.slice(-1), 10);
+
+            let sum = 0;
+            // The weighting pattern (3,1,3,1...) is always applied from right-to-left.
+            // Reversing the array makes the logic simpler.
+            a.reverse().forEach((digit, i) => {
+                sum += digit * (i % 2 === 0 ? 3 : 1);
+            });
+
+            const calculatedCheckDigit = (10 - (sum % 10)) % 10;
+            return checkDigit === calculatedCheckDigit;
+        }
+
+        /**
+         * Validates that a string is a real date in YYMMDD format.
+         */
         function isValidYYMMDD(value) {
             if (!/^\d{6}$/.test(value)) return false;
-            const year = parseInt(value.slice(0, 2), 10) + 2000;
+
+            const year = parseInt(value.slice(0, 2), 10) + 2000; // Assuming 21st century
             const month = parseInt(value.slice(2, 4), 10);
             const day = parseInt(value.slice(4, 6), 10);
+
             if (month < 1 || month > 12) return false;
+
+            // JS Date month is 0-indexed, so month-1
             const lastDayOfMonth = new Date(year, month, 0).getDate();
-            return !(day < 1 || day > lastDayOfMonth);
+            if (day < 1 || day > lastDayOfMonth) return false;
+
+            return true;
         }
 
         function validateInput(input, fieldName) {
             const value = input.value.trim();
             const msg = input.parentNode.querySelector('.validation-msg');
             const rules = fieldValidationRules[fieldName];
-            if (!rules) {
+
+            // If there's no rule for this field, assume it's valid.
+            if (!rules && !fieldName.match(/^(net|gross|length|width|depth|area)/i)) {
                 msg.style.display = "none";
                 input.classList.remove("is-invalid");
                 return;
             }
+
             let isValid = true;
-            let validationMessage = rules.message || "Invalid format.";
-            if (rules.customValidator) {
-                isValid = rules.customValidator(value);
-            } else if (rules.pattern) {
-                isValid = rules.pattern.test(value);
+            let validationMessage = "Invalid format.";
+
+            if (rules) {
+                validationMessage = rules.message || validationMessage;
+                if (rules.customValidator) {
+                    isValid = rules.customValidator(value);
+                } else if (rules.pattern) {
+                    isValid = rules.pattern.test(value);
+                } else if (rules.maxLength && value.length > rules.maxLength) {
+                    isValid = false;
+                }
             }
+
+            // Apply a generic decimal check for any measurement fields without a specific rule
+            if (!rules && fieldName.match(/^(net|gross|length|width|depth|area)/i)) {
+                isValid = /^\d{1,6}(\.\d{1,2})?$/.test(value); // e.g. 123456.12
+                validationMessage = "Must be a number (up to 6 digits, 2 decimal places).";
+            }
+
             if (!isValid) {
                 msg.innerText = validationMessage;
                 msg.style.display = "block";
@@ -297,149 +474,157 @@
             }
         }
 
-        // --- CORE UI FUNCTIONS ---
-        function buildFormForPreset(presetName) {
-            const inputList = document.getElementById('inputList');
-            inputList.innerHTML = "";
-            if (!presetName) {
-                updatePreview();
-                return;
-            }
-            const fieldsForPreset = presets[presetName];
-            if (!fieldsForPreset) return;
-            counter = 0;
-            fieldsForPreset.forEach(fieldValue => {
-                const fieldInfo = gs1Options.find(opt => opt.value === fieldValue);
-                if (!fieldInfo) return;
-                const div = document.createElement('div');
-                div.className = "row g-2 align-items-center mb-3 field-row";
-                div.setAttribute('data-index', counter);
-                const labelHTML = `<div class="col-md-5"><input type="text" class="form-control" value="${fieldInfo.text}" readonly title="${fieldInfo.tooltip || ''}"/><input type="hidden" name="inputs[${counter}].Field" value="${fieldInfo.value}" /></div>`;
-                const inputHTML = `<div class="col-md-7"><input type="text" class="form-control" name="inputs[${counter}].Value" placeholder="Enter value" data-field="${fieldValue}" oninput="validateInput(this, '${fieldValue}'); updatePreview()" /><small class="text-danger validation-msg" style="display:none"></small></div>`;
-                div.innerHTML = labelHTML + inputHTML;
-                inputList.appendChild(div);
-                counter++;
-            });
-            updatePreview();
-        }
+        function onFieldChange(select, index) {
+            const value = select.value;
+            const prevField = select.getAttribute('data-prev');
+            const input = select.parentNode.nextElementSibling.querySelector('input');
+            const msg = select.parentNode.nextElementSibling.querySelector('.validation-msg');
 
-        function updatePreview() {
-            const previewSection = document.getElementById('previewSection');
-            const inputs = document.querySelectorAll('#inputList input[data-field]');
-            if (inputs.length === 0) {
-                previewSection.style.display = 'none';
-                return;
-            }
-            const parts = [];
-            inputs.forEach(input => {
-                const fieldName = input.getAttribute('data-field');
-                const value = input.value.trim();
-                const fieldInfo = gs1Options.find(opt => opt.value === fieldName);
-
-                if (value && fieldInfo) {
-                    const allMatches = fieldInfo.text.match(/\(([^)]+)\)/g);
-                    if (allMatches && allMatches.length > 0) {
-                        const lastMatch = allMatches[allMatches.length - 1]; 
-                        const ai = lastMatch.slice(1, -1); 
-                        parts.push(`(${ai})${value}`);
-                    }
-                }
-            });
-
-            const gs1Data = parts.join('');
-
-            document.getElementById('gs1StringPreview').textContent = gs1Data;
-
-            const qrCodeDiv = document.getElementById('qrCodePreview');
-
-            qrCodeDiv.innerHTML = '';
-
-            if (gs1Data) {
-                previewSection.style.display = 'block';
-                new QRCode(qrCodeDiv, {
-                    text: gs1Data,
-                    width: 128,
-                    height: 128,
-                    correctLevel: QRCode.CorrectLevel.H
-                });
+            if (prevField) usedFields.delete(prevField);
+            if (value) {
+                usedFields.add(value);
+                input.disabled = false;
+                input.setAttribute("data-field", value);
+                input.oninput = () => validateInput(input, value);
             } else {
-                previewSection.style.display = 'none';
+                input.disabled = true;
+                input.removeAttribute("data-field");
+                msg.style.display = "none";
             }
+
+            select.setAttribute('data-prev', value);
+            updateAddButtonState();
         }
 
-        // --- EVENT LISTENERS ---
-        document.getElementById('presetSelector').addEventListener('change', function () {
-            buildFormForPreset(this.value);
-        });
+        function removeField(btn) {
+            const div = btn.closest('.row');
+            const field = div.querySelector('select').value;
+            if (field) usedFields.delete(field);
+            div.remove();
+            updateAddButtonState();
+        }
 
-        document.getElementById('jsonUpload').addEventListener('change', function (event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function (e) {
-                try {
-                    const uploadedPresets = JSON.parse(e.target.result);
-                    const selector = document.getElementById('presetSelector');
-                    for (const presetName in uploadedPresets) {
-                        if (!presets[presetName]) {
-                            presets[presetName] = uploadedPresets[presetName];
-                            const option = document.createElement('option');
-                            option.value = presetName;
-                            option.textContent = presetName + " (Uploaded)";
-                            selector.appendChild(option);
-                        }
-                    }
-                    alert(Object.keys(uploadedPresets).length + ' preset(s) loaded successfully!');
-                } catch (error) {
-                    alert('Error parsing JSON file: ' + error.message);
-                }
-            };
-            reader.readAsText(file);
-            event.target.value = '';
-        });
+        function updateAddButtonState() {
+            const allFieldsSelected = Array.from(document.querySelectorAll('select'))
+                .every(sel => sel.value !== "");
+
+            document.getElementById('addBtn').disabled = !allFieldsSelected || usedFields.size === gs1Options.length;
+        }
+
 
         document.getElementById('gs1Form').addEventListener('submit', function (e) {
             let isFormValid = true;
             const inputs = document.querySelectorAll('#inputList input[data-field]');
+
             if (inputs.length === 0) {
                 e.preventDefault();
-                alert('Please select a template to generate a label.');
+                alert('Please add at least one field to generate a label.');
                 return;
             }
+
             for (let input of inputs) {
                 const fieldName = input.getAttribute('data-field');
+                // Run validation on all fields before submitting
                 validateInput(input, fieldName);
+
                 if (input.classList.contains('is-invalid') || input.value.trim() === '') {
-                    // Check if field is required. For now, we assume all fields in a preset are required.
                     isFormValid = false;
                 }
             }
+
             if (!isFormValid) {
                 e.preventDefault();
                 alert('Please fix all invalid or empty fields before submitting.');
             }
         });
 
-        document.addEventListener('DOMContentLoaded', () => {
-            setDarkMode(localStorage.getItem('darkMode') === 'true');
-        });
-
         const toggleBtn = document.getElementById('darkModeToggle');
-        toggleBtn.addEventListener('click', () => {
-            setDarkMode(!document.body.classList.contains('dark-mode'));
-        });
 
         function setDarkMode(enabled) {
             if (enabled) {
                 document.body.classList.add('dark-mode');
                 localStorage.setItem('darkMode', 'true');
-                toggleBtn.textContent = '☀️';
+                toggleBtn.textContent = '☀️ Light Mode';
             } else {
                 document.body.classList.remove('dark-mode');
                 localStorage.setItem('darkMode', 'false');
-                toggleBtn.textContent = '🌙';
+                toggleBtn.textContent = '🌙 Dark Mode';
             }
         }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const darkModePref = localStorage.getItem('darkMode') === 'true';
+            setDarkMode(darkModePref);
+
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+                new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        });
+
+        toggleBtn.addEventListener('click', () => {
+            setDarkMode(!document.body.classList.contains('dark-mode'));
+        });
+
+        document.getElementById('presetSelector').addEventListener('change', function () {
+            const preset = this.value;
+            if (!preset) return;
+
+            
+            const inputList = document.getElementById('inputList');
+            inputList.innerHTML = "";
+            usedFields.clear();
+            counter = 0;
+
+            presets[preset].forEach(fieldValue => {
+                const div = document.createElement('div');
+                div.className = "row g-2 align-items-center mb-3 field-row";
+                div.setAttribute('data-index', counter);
+
+                usedFields.add(fieldValue); 
+
+                const availableOptions = gs1Options.filter(opt => !usedFields.has(opt.value) || opt.value === fieldValue);
+
+                const selectHTML = `
+                        <div class="col-md-5">
+                            <select class="form-select" name="inputs[${counter}].Field"
+                                    onchange="onFieldChange(this, ${counter})"
+                                    data-bs-toggle="tooltip" title="Select a GS1 field" data-prev="${fieldValue}">
+                                <option value="">Select GS1 Field</option>
+                                ${availableOptions.map(opt =>
+                        `<option value="${opt.value}" ${opt.value === fieldValue ? 'selected' : ''}>${opt.text}</option>`).join('')}
+                            </select>
+                        </div>
+                    `;
+
+                const inputHTML = `
+                        <div class="col-md-5">
+                            <input type="text"
+                                   class="form-control"
+                                   name="inputs[${counter}].Value"
+                                   placeholder="Enter value"
+                                   data-field="${fieldValue}"
+                                   oninput="validateInput(this, '${fieldValue}')" />
+                            <small class="text-danger validation-msg" style="display:none"></small>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="button" class="btn btn-outline-danger" onclick="removeField(this)">Remove</button>
+                        </div>
+                    `;
+
+                div.innerHTML = selectHTML + inputHTML;
+                inputList.appendChild(div);
+                new bootstrap.Tooltip(div.querySelector('[data-bs-toggle="tooltip"]'));
+
+                counter++;
+            });
+
+            updateAddButtonState();
+
+        });
+
     </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

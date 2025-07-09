@@ -1,8 +1,7 @@
-﻿// HomeController.cs (Cleaned up)
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Web;
 using System.Web.Mvc;
 using ZXing;
 using gs1BarcodeApplication.Models;
@@ -13,8 +12,6 @@ using System.IO;
 using iTextSharp.text;
 using iTextSharp.text.pdf;
 using gs1BarcodeApplication.Helpers;
-using Newtonsoft.Json;
-using System.Web.Configuration;
 
 
 namespace gs1BarcodeApplication.Controllers
@@ -23,59 +20,24 @@ namespace gs1BarcodeApplication.Controllers
     {
         public ActionResult Index()
         {
-            var presets = new Dictionary<string, List<string>>();
-
-            // Loop through all keys in appSettings
-            foreach (var key in WebConfigurationManager.AppSettings.AllKeys)
-            {
-                // Check if the key starts with our prefix
-                if (key.StartsWith("preset:"))
-                {
-                    // Get the preset name by removing the prefix
-                    var presetName = key.Substring("preset:".Length);
-
-                    // Get the comma-separated string of fields
-                    var fieldsString = WebConfigurationManager.AppSettings[key];
-
-                    // Split the string into a list and remove any extra whitespace
-                    var fieldsList = fieldsString.Split(',')
-                                                 .Select(f => f.Trim())
-                                                 .ToList();
-
-                    presets.Add(presetName, fieldsList);
-                }
-            }
-
-            // Pass the presets dictionary to the view
-            ViewBag.Presets = presets;
-
             return View();
         }
 
-        // ... Submit, ExportPdf, and other methods remain unchanged ...
         [HttpPost]
         public ActionResult Submit(List<Gs1FieldInput> inputs)
         {
             if (inputs == null || inputs.Count == 0)
             {
                 ModelState.AddModelError("", "No inputs received.");
-                // Pass back the ViewBag data even on error
-                var presetsFilePath = Server.MapPath("~/presets.json");
-                var presets = new Dictionary<string, List<string>>();
-                if (System.IO.File.Exists(presetsFilePath))
-                {
-                    var jsonContent = System.IO.File.ReadAllText(presetsFilePath);
-                    presets = JsonConvert.DeserializeObject<Dictionary<string, List<string>>>(jsonContent);
-                }
-                ViewBag.Presets = presets;
-                return View("Index");
+                return View("Index", new List<Gs1FieldInput>());
             }
             var model = new ProductLabelModel();
-
-            foreach (var input in inputs)
+            
+            foreach( var input in inputs)
             {
+
                 var prop = typeof(ProductLabelModel).GetProperty(input.Field);
-                if (prop != null && prop.CanWrite)
+                if(prop != null && prop.CanWrite)
                 {
                     prop.SetValue(model, input.Value);
                 }
@@ -88,7 +50,6 @@ namespace gs1BarcodeApplication.Controllers
             ViewBag.QrImage = qrImage;
             return View("LabelResult", model);
         }
-
         [HttpPost]
         public FileResult ExportPdf(string gs1String, string barcodeBase64, string qrBase64)
         {
@@ -175,5 +136,6 @@ namespace gs1BarcodeApplication.Controllers
                 return "data:image/png;base64," + base64;
             }
         }
+
     }
 }
