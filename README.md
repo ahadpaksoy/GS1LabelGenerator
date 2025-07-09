@@ -4,8 +4,8 @@ A dynamic, preset-driven web application for building and previewing GS1-complia
 
 <table>
   <tr>
-    <td align="center"><strong>Light Mode</strong></td>
-    <td align="center"><strong>Dark Mode</strong></td>
+    <td align="center"><strong>Input Page</strong></td>
+    <td align="center"><strong>Submit Page</strong></td>
   </tr>
   <tr>
     <td>
