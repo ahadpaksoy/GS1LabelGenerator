@@ -9,10 +9,10 @@ A dynamic, preset-driven web application for building and previewing GS1-complia
   </tr>
   <tr>
     <td>
-      <img src="https://i.imgur.com/JuBF88p.png" alt="GS1 Label Builder in Light Mode" width="100%">
+      <img src="https://i.imgur.com/JuBF88p.png" alt="GS1 Label Builder Input Page" width="100%">
     </td>
     <td>
-      <img src="https://i.imgur.com/bm4ac1d.png" alt="GS1 Label Builder in Dark Mode" width="100%">
+      <img src="https://i.imgur.com/bm4ac1d.png" alt="GS1 Label Builder in Submit Page" width="100%">
     </td>
   </tr>
 </table>
