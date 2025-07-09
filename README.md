@@ -1,39 +1,86 @@
 # GS1 Label Generator
 
-A dynamic web application for building GS1-compliant product labels with customizable fields and live validation.
+A dynamic, preset-driven web application for building and previewing GS1-compliant product labels. This tool streamlines the creation of complex GS1 strings by using configurable templates, providing live previews, and exporting the final label as a PDF.
+
+ 
+*(Suggestion: Take a screenshot of your finished application and upload it to a site like Imgur, then replace this URL)*
 
 ---
 
-## Features
+## ✨ Features
 
-- Dynamically add/remove GS1 fields such as GTIN, batch number, production date, expiration date, serial number, and more.
-- Field-specific input validation, including GTIN checksum validation and date format checking (YYMMDD).
-- Preset templates for common label types (Pharma, Food, Logistics) that pre-populate relevant GS1 fields.
-- Dark mode toggle for better user experience in low-light environments.
-- Tooltips for guidance on each GS1 field.
-- Responsive and clean UI built with Bootstrap 5.
+- **Preset-Driven UI**: The form is built dynamically based on pre-configured templates. The manual addition and removal of fields has been removed to ensure consistency and ease of use.
+- **Live Preview**: See the generated GS1 string and a scannable QR code update in real-time as you type.
+- **Configurable Presets**:
+    - **Built-in Templates**: Comes with default presets for common label types (e.g., Pharma, Food, Logistics) loaded directly from `presets.json`.
+    - **Dynamic Preset Upload**: Users can upload their own `presets.json` file to add custom templates to the dropdown menu on the fly.
+- **Real-Time Input Validation**: Client-side validation provides immediate feedback on data formatting, including:
+    - GTIN check-digit calculation
+    - Correct date formatting (YYMMDD)
+    - Field-specific length and character-type rules
+- **PDF Export**: Generate and download a professional A6-sized PDF of your final label, complete with the GS1 data, a Code-128 barcode, and a QR code.
+- **Modern UI/UX**:
+    - Clean and responsive interface built with Bootstrap 5.
+    - Dark mode toggle for a comfortable experience in any lighting.
+    - Informative tooltips for each GS1 field to guide data entry.
 
 ---
 
-## Technologies Used
+## 🛠️ Technologies Used
 
-- **ASP.NET MVC** for server-side rendering and model binding.
-- **Bootstrap 5** for responsive design and UI components.
-- **Vanilla JavaScript** for dynamic field management, validation, and dark mode toggle.
-- HTML5 & CSS3 for markup and styling.
+- **Backend**: ASP.NET MVC, C#
+- **Frontend**: HTML5, CSS3, Bootstrap 5, Vanilla JavaScript
+- **Barcode/QR Generation**: ZXing.Net (Barcode), QRCoder (QR Code)
+- **PDF Generation**: iTextSharp
+- **Data Serialization**: Newtonsoft.Json
 
 ---
 
-## Getting Started
+## 🚀 Getting Started
 
 ### Prerequisites
 
-- .NET SDK (for running ASP.NET MVC projects)
-- A web browser (Chrome, Firefox, Edge, etc.)
+- [.NET Framework 4.7.2 or later](https://dotnet.microsoft.com/download/dotnet-framework)
+- [Visual Studio](https://visualstudio.microsoft.com/vs/) with the ASP.NET and web development workload installed.
 
 ### Running the Project
 
-1. Clone the repository:
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/ahadpaksoy/GS1LabelGenerator.git
+    cd GS1LabelGenerator
+    ```
 
-   ```bash
-   git clone https://github.com/yourusername/gs1-label-generator.git
+2.  **Open the solution in Visual Studio:**
+    - Double-click the `.sln` file to open the project.
+
+3.  **Run the application:**
+    - Press `F5` or click the "Start Debugging" button (usually a green play icon).
+    - Visual Studio will build the project and open it in your default web browser.
+
+---
+
+## ⚙️ Configuration
+
+The application is configured using a simple JSON file located at the root of the project.
+
+### `presets.json`
+
+This file defines the templates that appear in the dropdown menu. The key is the display name of the preset, and the value is an array of strings corresponding to the property names in `ProductLabelModel.cs`.
+
+**Example `presets.json`:**
+```json
+{
+  "💊 Pharma Label": [
+    "GTIN",
+    "batch_lotNumber",
+    "expirationDate",
+    "serialNumber"
+  ],
+  "🚛 Logistics Label": [
+    "sscc",
+    "GTIN",
+    "countContained",
+    "customerPONumber"
+  ]
+}
