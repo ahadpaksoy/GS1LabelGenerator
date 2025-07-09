@@ -1,0 +1,40 @@
+﻿{
+  "🚛 Logistics Label": [
+    "GTIN",
+    "serialNumber",
+    "variableCount",
+    "netWeightKg",
+    "customerPONumber"
+  ],
+  "👕 Textile Label": [
+    "GTIN",
+    "gtinContained",
+    "batch_lotNumber",
+    "productionDate",
+    "packDate",
+    "serialNumber",
+    "additionalProductID",
+    "customerPartNumber",
+    "madeToOrderVariation",
+    "variableCount",
+    "countContained",
+    "netWeightKg",
+    "lengthM",
+    "widthM",
+    "depthM",
+    "areaSqM",
+    "netWeightLb",
+    "lengthIn",
+    "widthIn",
+    "depthIn",
+    "areaSqIn",
+    "customerPONumber",
+    "gsin",
+    "shipTo",
+    "origin",
+    "initialProcessingCountry",
+    "processingCountry",
+    "disassemblyCountry",
+    "shelfLifeDuration"
+  ]
+}
