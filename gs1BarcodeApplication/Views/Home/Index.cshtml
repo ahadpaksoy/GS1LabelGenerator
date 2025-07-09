@@ -12,9 +12,9 @@
     <link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16x16.png">
-    <link rel="manifest" href="/site.webmanifest">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <style>
         body.dark-mode {
             background-color: #121212 !important;
@@ -98,16 +98,53 @@
                 <hr />
                 <div id="previewSection" style="display: none;">
                     <h4 class="text-center">Live Preview</h4>
-                    <div class="row mt-3 align-items-center">
-                        <div class="col-md-8">
+                    <div class="mt-3">
+                        <!-- GS1 String (full width) -->
+                        <div class="mb-3">
                             <strong>GS1 String:</strong>
                             <pre id="gs1StringPreview" class="p-2 border rounded"></pre>
                         </div>
-                        <div class="col-md-4 text-center">
-                            <strong>QR Code:</strong>
+                        <!-- QR Code (centered) -->
+                        <div class="mb-3 text-center">
+                            <strong>QR Code:</strong><br />
                             <div id="qrCodePreview" class="p-2 border rounded d-inline-block bg-white"></div>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="resultModal" tabindex="-1" aria-labelledby="resultModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="resultModalLabel">Generated GS1 Label</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="text-center mb-4">
+                        <img id="modalBarcodeImage" src="" class="img-fluid" style="max-width: 400px; height: 100px;" alt="Barcode" />
+                    </div>
+                    <div class="row align-items-center">
+                        <div class="col-md-9">
+                            <strong>GS1 Data String:</strong>
+                            <pre id="modalGs1String" class="p-2 border rounded" style="white-space: pre-wrap; word-break: break-all;"></pre>
+
+                            <strong>Data Summary:</strong>
+                            <div id="modalSummaryTableContainer" style="max-height: 200px; overflow-y: auto;">
+                                <!-- The summary table will be generated here by JavaScript -->
+                            </div>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <strong>QR Code:</strong><br />
+                            <img id="modalQrImage" src="" class="img-fluid" alt="QR Code" />
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="downloadPdfButton">Download PDF</button>
                 </div>
             </div>
         </div>
@@ -326,43 +363,49 @@
         function updatePreview() {
             const previewSection = document.getElementById('previewSection');
             const inputs = document.querySelectorAll('#inputList input[data-field]');
+
             if (inputs.length === 0) {
                 previewSection.style.display = 'none';
                 return;
             }
+
             const parts = [];
             inputs.forEach(input => {
                 const fieldName = input.getAttribute('data-field');
                 const value = input.value.trim();
                 const fieldInfo = gs1Options.find(opt => opt.value === fieldName);
-
                 if (value && fieldInfo) {
-                    const allMatches = fieldInfo.text.match(/\(([^)]+)\)/g);
-                    if (allMatches && allMatches.length > 0) {
-                        const lastMatch = allMatches[allMatches.length - 1]; 
-                        const ai = lastMatch.slice(1, -1); 
+                    const aiMatch = fieldInfo.text.match(/\((\d+)\)$/);
+                    if (aiMatch) {
+                        const ai = aiMatch[1];
                         parts.push(`(${ai})${value}`);
                     }
                 }
             });
-
             const gs1Data = parts.join('');
 
-            document.getElementById('gs1StringPreview').textContent = gs1Data;
+            // --- BARCODE AND QR CODE GENERATION LOGIC ---
 
+            const gs1StringElem = document.getElementById('gs1StringPreview');
             const qrCodeDiv = document.getElementById('qrCodePreview');
 
-            qrCodeDiv.innerHTML = '';
+
+            gs1StringElem.textContent = gs1Data;
+            qrCodeDiv.innerHTML = ''; // Clear previous QR code
 
             if (gs1Data) {
                 previewSection.style.display = 'block';
+
+                // Generate QR Code
                 new QRCode(qrCodeDiv, {
                     text: gs1Data,
                     width: 128,
                     height: 128,
-                    correctLevel: QRCode.CorrectLevel.H
+                    correctLevel: QRCode.CorrectLevel.Q // <--- SOLUTION: Changed to Quartile
                 });
+
             } else {
+                // If there's no data, hide everything
                 previewSection.style.display = 'none';
             }
         }
@@ -399,25 +442,75 @@
         });
 
         document.getElementById('gs1Form').addEventListener('submit', function (e) {
+            // 1. Prevent the default page reload. This is the most critical part.
+            e.preventDefault();
+
             let isFormValid = true;
             const inputs = document.querySelectorAll('#inputList input[data-field]');
+
             if (inputs.length === 0) {
-                e.preventDefault();
                 alert('Please select a template to generate a label.');
                 return;
             }
+
             for (let input of inputs) {
                 const fieldName = input.getAttribute('data-field');
                 validateInput(input, fieldName);
                 if (input.classList.contains('is-invalid') || input.value.trim() === '') {
-                    // Check if field is required. For now, we assume all fields in a preset are required.
                     isFormValid = false;
                 }
             }
+
             if (!isFormValid) {
-                e.preventDefault();
                 alert('Please fix all invalid or empty fields before submitting.');
+                return;
             }
+
+            const submitButton = e.target.querySelector('button[type="submit"]');
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Generating...';
+
+            // 2. Send form data using Fetch (AJAX)
+            const formData = new FormData(e.target);
+
+            fetch('/Home/Submit', {
+                method: 'POST',
+                body: new URLSearchParams(formData)
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.text().then(text => { throw new Error(text || 'Server error: ' + response.statusText) });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // 3. On success, populate the modal with the received JSON data
+                    if (data.success) {
+                        document.getElementById('modalGs1String').textContent = data.gs1String;
+                        document.getElementById('modalBarcodeImage').src = data.barcodeImage;
+                        document.getElementById('modalQrImage').src = data.qrImage;
+
+                        const tableContainer = document.getElementById('modalSummaryTableContainer');
+                        tableContainer.innerHTML = buildSummaryTable(data.modelData);
+
+                        const resultModal = new bootstrap.Modal(document.getElementById('resultModal'));
+                        resultModal.show();
+
+                        document.getElementById('downloadPdfButton').onclick = function () {
+                            downloadPdf(data.gs1String, data.barcodeImage, data.qrImage);
+                        };
+                    }
+                })
+                .catch(error => {
+                    // 4. On failure, show an informative error alert
+                    console.error('Error:', error);
+                    alert('An error occurred while generating the label:\n' + error.message);
+                })
+                .finally(() => {
+                    // 5. Always re-enable the button
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = '✅ Generate Label & PDF';
+                });
         });
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -439,6 +532,43 @@
                 localStorage.setItem('darkMode', 'false');
                 toggleBtn.textContent = '🌙';
             }
+        }
+
+        function buildSummaryTable(modelData) {
+            let tableHtml = '<table class="table table-sm table-bordered"><tbody>';
+            for (const key in modelData) {
+                if (modelData[key]) { // Check if the property has a value
+                    const fieldInfo = gs1Options.find(opt => opt.value === key);
+                    const displayName = fieldInfo ? fieldInfo.text : key; // Use friendly name if available
+                    tableHtml += `<tr><td class="w-50">${displayName}</td><td>${modelData[key]}</td></tr>`;
+                }
+            }
+            tableHtml += '</tbody></table>';
+            return tableHtml;
+        }
+
+        function downloadPdf(gs1String, barcodeBase64, qrBase64) {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/Home/ExportPdf';
+
+            const params = {
+                gs1String: gs1String,
+                barcodeBase64: barcodeBase64.replace("data:image/png;base64,", ""), // Send raw base64
+                qrBase64: qrBase64.replace("data:image/png;base64,", "") // Send raw base64
+            };
+
+            for (const key in params) {
+                const hiddenField = document.createElement('input');
+                hiddenField.type = 'hidden';
+                hiddenField.name = key;
+                hiddenField.value = params[key];
+                form.appendChild(hiddenField);
+            }
+
+            document.body.appendChild(form);
+            form.submit();
+            document.body.removeChild(form);
         }
     </script>
 </body>

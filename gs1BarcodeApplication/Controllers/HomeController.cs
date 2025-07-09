@@ -1,21 +1,20 @@
-﻿// HomeController.cs (Cleaned up)
+﻿// HomeController.cs (Corrected for Consistent JSON Responses)
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web.Mvc;
-using ZXing;
+using gs1BarcodeApplication.Helpers;
 using gs1BarcodeApplication.Models;
-using System.Drawing;
-using System.Drawing.Imaging;
-using QRCoder;
-using System.IO;
 using iTextSharp.text;
 using iTextSharp.text.pdf;
-using gs1BarcodeApplication.Helpers;
-using Newtonsoft.Json;
+using QRCoder;
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.IO;
+using System.Linq;
+using System.Reflection; // Added for model data conversion
 using System.Web.Configuration;
-
+using System.Web.Mvc;
+using ZXing;
 
 namespace gs1BarcodeApplication.Controllers
 {
@@ -24,136 +23,135 @@ namespace gs1BarcodeApplication.Controllers
         public ActionResult Index()
         {
             var presets = new Dictionary<string, List<string>>();
-
-            // Loop through all keys in appSettings
             foreach (var key in WebConfigurationManager.AppSettings.AllKeys)
             {
-                // Check if the key starts with our prefix
                 if (key.StartsWith("preset:"))
                 {
-                    // Get the preset name by removing the prefix
                     var presetName = key.Substring("preset:".Length);
-
-                    // Get the comma-separated string of fields
                     var fieldsString = WebConfigurationManager.AppSettings[key];
-
-                    // Split the string into a list and remove any extra whitespace
                     var fieldsList = fieldsString.Split(',')
                                                  .Select(f => f.Trim())
                                                  .ToList();
-
                     presets.Add(presetName, fieldsList);
                 }
             }
-
-            // Pass the presets dictionary to the view
             ViewBag.Presets = presets;
-
             return View();
         }
 
-        // ... Submit, ExportPdf, and other methods remain unchanged ...
         [HttpPost]
-        public ActionResult Submit(List<Gs1FieldInput> inputs)
+        public JsonResult Submit(List<Gs1FieldInput> inputs)
         {
-            if (inputs == null || inputs.Count == 0)
+            try
             {
-                ModelState.AddModelError("", "No inputs received.");
-                // Pass back the ViewBag data even on error
-                var presetsFilePath = Server.MapPath("~/presets.json");
-                var presets = new Dictionary<string, List<string>>();
-                if (System.IO.File.Exists(presetsFilePath))
+                if (inputs == null || !inputs.Any())
                 {
-                    var jsonContent = System.IO.File.ReadAllText(presetsFilePath);
-                    presets = JsonConvert.DeserializeObject<Dictionary<string, List<string>>>(jsonContent);
+                    // Always return JSON, even for errors
+                    return Json(new { success = false, message = "No input data received." });
                 }
-                ViewBag.Presets = presets;
-                return View("Index");
-            }
-            var model = new ProductLabelModel();
 
-            foreach (var input in inputs)
-            {
-                var prop = typeof(ProductLabelModel).GetProperty(input.Field);
-                if (prop != null && prop.CanWrite)
+                var model = new ProductLabelModel();
+                foreach (var input in inputs)
                 {
-                    prop.SetValue(model, input.Value);
+                    var prop = typeof(ProductLabelModel).GetProperty(input.Field);
+                    if (prop != null && prop.CanWrite)
+                    {
+                        prop.SetValue(model, input.Value);
+                    }
                 }
+
+                // Server-side validation check
+                TryValidateModel(model);
+                if (!ModelState.IsValid)
+                {
+                    var errorMessages = ModelState.Values
+                        .SelectMany(v => v.Errors)
+                        .Select(e => e.ErrorMessage);
+                    // Return a JSON object with the aggregated error messages
+                    return Json(new { success = false, message = string.Join("\n", errorMessages) });
+                }
+
+                // If validation passes, generate data
+                string gs1Data = Gs1Builder.BuildGs1Data(model);
+                string barcodeBase64 = GenerateBarcode(gs1Data);
+                string qrImage = GenerateQrBase64(gs1Data);
+
+                // Convert the populated model to a dictionary for the client-side summary table
+                var modelData = model.GetType()
+                    .GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                    .Where(p => p.GetValue(model, null) != null && !string.IsNullOrWhiteSpace(p.GetValue(model, null).ToString()))
+                    .ToDictionary(p => p.Name, p => p.GetValue(model, null).ToString());
+
+                // Return a JSON object on success
+                return Json(new
+                {
+                    success = true,
+                    gs1String = gs1Data,
+                    barcodeImage = "data:image/png;base64," + barcodeBase64,
+                    qrImage = qrImage,
+                    modelData = modelData
+                });
             }
-            string gs1Data = Gs1Builder.BuildGs1Data(model);
-            string barcodeBase64 = GenerateBarcode(gs1Data);
-            string qrImage = GenerateQrBase64(gs1Data);
-            ViewBag.Gs1String = gs1Data;
-            ViewBag.BarcodeImage = "data:image/png;base64," + barcodeBase64;
-            ViewBag.QrImage = qrImage;
-            return View("LabelResult", model);
+            catch (Exception ex)
+            {
+                // Catch any other unexpected errors and return a JSON response
+                return Json(new { success = false, message = "An unexpected error occurred: " + ex.Message });
+            }
         }
 
         [HttpPost]
         public FileResult ExportPdf(string gs1String, string barcodeBase64, string qrBase64)
         {
+            // The JavaScript now sends raw base64, so no need to replace the data URI prefix.
             using (MemoryStream ms = new MemoryStream())
             {
-                Document document = new Document(PageSize.A6);
+                Document document = new Document(PageSize.A6, 25, 25, 30, 30);
                 PdfWriter.GetInstance(document, ms);
                 document.Open();
 
-                // Fonts
                 var titleFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 14);
                 var textFont = FontFactory.GetFont(FontFactory.HELVETICA, 10);
 
-                // Title
-                document.Add(new Paragraph("GS1 Label", titleFont));
-                document.Add(new Paragraph(" "));
+                document.Add(new Paragraph("Generated GS1 Label", titleFont) { Alignment = Element.ALIGN_CENTER });
+                document.Add(new Chunk("\n"));
 
-                // GS1 String
-                document.Add(new Paragraph("GS1 Data:", textFont));
-                document.Add(new Paragraph(gs1String, textFont));
-                document.Add(new Paragraph(" "));
-
-                // Barcode Image
                 if (!string.IsNullOrEmpty(barcodeBase64))
                 {
-                    byte[] barcodeBytes = Convert.FromBase64String(barcodeBase64.Replace("data:image/png;base64,", ""));
-                    iTextSharp.text.Image barcodeImg = iTextSharp.text.Image.GetInstance(barcodeBytes);
-                    barcodeImg.ScaleToFit(200f, 50f);
+                    byte[] barcodeBytes = Convert.FromBase64String(barcodeBase64);
+                    var barcodeImg = iTextSharp.text.Image.GetInstance(barcodeBytes);
+                    barcodeImg.ScaleToFit(document.PageSize.Width - document.LeftMargin - document.RightMargin, 50f);
+                    barcodeImg.Alignment = Element.ALIGN_CENTER;
                     document.Add(barcodeImg);
                 }
 
-                document.Add(new Paragraph(" "));
+                document.Add(new Chunk("\n"));
+                document.Add(new Paragraph("GS1 Data:", textFont));
+                document.Add(new Paragraph(gs1String, FontFactory.GetFont(FontFactory.COURIER, 9)));
+                document.Add(new Chunk("\n"));
 
-                // QR Image
                 if (!string.IsNullOrEmpty(qrBase64))
                 {
-                    byte[] qrBytes = Convert.FromBase64String(qrBase64.Replace("data:image/png;base64,", ""));
-                    iTextSharp.text.Image qrImg = iTextSharp.text.Image.GetInstance(qrBytes);
+                    byte[] qrBytes = Convert.FromBase64String(qrBase64);
+                    var qrImg = iTextSharp.text.Image.GetInstance(qrBytes);
                     qrImg.ScaleToFit(100f, 100f);
+                    qrImg.Alignment = Element.ALIGN_CENTER;
                     document.Add(qrImg);
                 }
 
                 document.Close();
-
-                return File(ms.ToArray(), "application/pdf", "GS1_Label.pdf");
+                return File(ms.ToArray(), "application/pdf", $"GS1_Label_{DateTime.Now:yyyyMMddHHmmss}.pdf");
             }
         }
-        /// <summary>
-        /// Generates the barcode. Further informatin look for the ZXing library
-        /// </summary>
-        /// <param name="content"></param>
-        /// <returns></returns>
+
+        // --- Helper methods ---
         private string GenerateBarcode(string content)
         {
+            if (string.IsNullOrEmpty(content)) return string.Empty;
             var writer = new BarcodeWriter
             {
                 Format = BarcodeFormat.CODE_128,
-                Options = new ZXing.Common.EncodingOptions
-                {
-                    Height = 100,
-                    Width = 400,
-                    Margin = 10
-                }
+                Options = new ZXing.Common.EncodingOptions { Height = 100, Width = 400, Margin = 10 }
             };
-
             using (var bitmap = writer.Write(content))
             using (var ms = new MemoryStream())
             {
@@ -164,15 +162,15 @@ namespace gs1BarcodeApplication.Controllers
 
         private string GenerateQrBase64(string content)
         {
-            using (QRCodeGenerator qrGenerator = new QRCodeGenerator())
-            using (QRCodeData qrCodeData = qrGenerator.CreateQrCode(content, QRCodeGenerator.ECCLevel.Q))
-            using (QRCode qrCode = new QRCode(qrCodeData))
-            using (Bitmap qrBitmap = qrCode.GetGraphic(5))
-            using (MemoryStream ms = new MemoryStream())
+            if (string.IsNullOrEmpty(content)) return string.Empty;
+            using (var qrGenerator = new QRCodeGenerator())
+            using (var qrCodeData = qrGenerator.CreateQrCode(content, QRCodeGenerator.ECCLevel.Q))
+            using (var qrCode = new QRCode(qrCodeData))
+            using (var qrBitmap = qrCode.GetGraphic(5))
+            using (var ms = new MemoryStream())
             {
                 qrBitmap.Save(ms, ImageFormat.Png);
-                var base64 = Convert.ToBase64String(ms.ToArray());
-                return "data:image/png;base64," + base64;
+                return "data:image/png;base64," + Convert.ToBase64String(ms.ToArray());
             }
         }
     }
