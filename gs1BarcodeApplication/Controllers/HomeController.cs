@@ -1,4 +1,4 @@
-﻿// HomeController.cs (Corrected for Consistent JSON Responses)
+﻿
 
 using gs1BarcodeApplication.Helpers;
 using gs1BarcodeApplication.Models;
@@ -11,7 +11,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
-using System.Reflection; // Added for model data conversion
+using System.Reflection;
 using System.Web.Configuration;
 using System.Web.Mvc;
 using ZXing;
