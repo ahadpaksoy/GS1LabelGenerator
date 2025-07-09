@@ -2,9 +2,20 @@
 
 A dynamic, preset-driven web application for building and previewing GS1-compliant product labels. This tool streamlines the creation of complex GS1 strings by using configurable templates, providing live previews, and exporting the final label as a PDF.
 
- 
-![Imgur Image](https://imgur.com/gallery/gs1-label-builder-ss-wSGcddG#JuBF88p)
-![Imgur Image](https://imgur.com/gallery/gs1-label-builder-ss-wSGcddG#bm4ac1d)
+<table>
+  <tr>
+    <td align="center"><strong>Light Mode</strong></td>
+    <td align="center"><strong>Dark Mode</strong></td>
+  </tr>
+  <tr>
+    <td>
+      <img src="https://i.imgur.com/JuBF88p.png" alt="GS1 Label Builder in Light Mode" width="100%">
+    </td>
+    <td>
+      <img src="https://i.imgur.com/bm4ac1d.png" alt="GS1 Label Builder in Dark Mode" width="100%">
+    </td>
+  </tr>
+</table>
 
 ---
 
