@@ -360,7 +360,7 @@
             });
             updatePreview();
         }
-
+        // Updates the preview in real time.
         function updatePreview() {
             const previewSection = document.getElementById('previewSection');
             const inputs = document.querySelectorAll('#inputList input[data-field]');
@@ -383,6 +383,8 @@
                     }
                 }
             });
+
+            // GS1 Label
             const gs1Data = parts.join('');
 
    
@@ -393,7 +395,7 @@
 
             gs1StringElem.textContent = gs1Data;
             qrCodeDiv.innerHTML = ''; 
-
+        
             if (gs1Data) {
                 previewSection.style.display = 'block';
 
