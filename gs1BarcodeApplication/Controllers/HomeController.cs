@@ -40,13 +40,14 @@ namespace gs1BarcodeApplication.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public JsonResult Submit(List<Gs1FieldInput> inputs)
         {
             try
             {
                 if (inputs == null || !inputs.Any())
                 {
-                    // Always return JSON, even for errors
+                    
                     return Json(new { success = false, message = "No input data received." });
                 }
 
@@ -94,15 +95,16 @@ namespace gs1BarcodeApplication.Controllers
             }
             catch (Exception ex)
             {
-                // Catch any other unexpected errors and return a JSON response
+                
                 return Json(new { success = false, message = "An unexpected error occurred: " + ex.Message });
             }
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public FileResult ExportPdf(string gs1String, string barcodeBase64, string qrBase64)
         {
-            // The JavaScript now sends raw base64, so no need to replace the data URI prefix.
+            
             using (MemoryStream ms = new MemoryStream())
             {
                 Document document = new Document(PageSize.A6, 25, 25, 30, 30);
