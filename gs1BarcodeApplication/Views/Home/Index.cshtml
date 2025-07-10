@@ -272,7 +272,7 @@
         ];
         const presets = @Html.Raw(Json.Encode(ViewBag.Presets ?? new Dictionary<string, List<string>>()));
 
-        // --- VALIDATION RULES ---
+        // --- VALIDATION RULES (RESTORED) ---
         const fieldValidationRules = {
             sscc: { pattern: /^\d{18}$/, message: "SSCC must be exactly 18 digits." },
             GTIN: { customValidator: validateGTIN, message: "Invalid GTIN. Check length and check digit." },
@@ -289,7 +289,7 @@
             shelfLifeDuration: { pattern: /^\d{1,6}$/, message: "Must be 1-6 digits." },
         };
 
-        // --- VALIDATION FUNCTIONS ---
+        // --- VALIDATION FUNCTIONS (RESTORED) ---
         function validateGTIN(gtin) {
             if (!/^\d{8}$|^\d{12}$|^\d{13}$|^\d{14}$/.test(gtin)) return false;
             const a = gtin.slice(0, -1).split('').map(char => parseInt(char, 10));
@@ -385,7 +385,7 @@
             });
             const gs1Data = parts.join('');
 
-            // --- BARCODE AND QR CODE GENERATION LOGIC ---
+   
 
             const gs1StringElem = document.getElementById('gs1StringPreview');
             const qrCodeDiv = document.getElementById('qrCodePreview');
@@ -397,16 +397,16 @@
             if (gs1Data) {
                 previewSection.style.display = 'block';
 
-                // Generate QR Code
+
                 new QRCode(qrCodeDiv, {
                     text: gs1Data,
                     width: 128,
                     height: 128,
-                    correctLevel: QRCode.CorrectLevel.Q
+                    correctLevel: QRCode.CorrectLevel.Q 
                 });
 
             } else {
-               
+
                 previewSection.style.display = 'none';
             }
         }
@@ -444,6 +444,7 @@
         document.getElementById('gs1Form').addEventListener('submit', function (e) {
             e.preventDefault();
 
+
             let isFormValid = true;
             const inputs = document.querySelectorAll('#inputList input[data-field]');
             if (inputs.length === 0) {
@@ -461,21 +462,23 @@
                 alert('Please fix all invalid or empty fields before submitting.');
                 return;
             }
-.
+
 
 
             const submitButton = e.target.querySelector('button[type="submit"]');
             submitButton.disabled = true;
             submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Generating...';
 
+
             const formData = new FormData(e.target);
+
             fetch('/Home/Submit', {
                 method: 'POST',
-                body: formData 
+                body: formData // <-- Send the FormData object directly
             })
                 .then(response => {
                     if (!response.ok) {
-                       
+                        // Check if the response is the yellow screen of death (HTML) or a JSON error
                         const contentType = response.headers.get("content-type");
                         if (contentType && contentType.indexOf("application/json") !== -1) {
                             return response.json().then(data => { throw new Error(data.message || 'An unknown error occurred.') });
@@ -487,7 +490,7 @@
                 })
                 .then(data => {
                     if (data.success) {
-                        
+                        // ... your existing success logic for populating the modal ...
                         document.getElementById('modalGs1String').textContent = data.gs1String;
                         document.getElementById('modalBarcodeImage').src = data.barcodeImage;
                         document.getElementById('modalQrImage').src = data.qrImage;
@@ -536,9 +539,9 @@
         function buildSummaryTable(modelData) {
             let tableHtml = '<table class="table table-sm table-bordered"><tbody>';
             for (const key in modelData) {
-                if (modelData[key]) { 
+                if (modelData[key]) { // Check if the property has a value
                     const fieldInfo = gs1Options.find(opt => opt.value === key);
-                    const displayName = fieldInfo ? fieldInfo.text : key; 
+                    const displayName = fieldInfo ? fieldInfo.text : key; // Use friendly name if available
                     tableHtml += `<tr><td class="w-50">${displayName}</td><td>${modelData[key]}</td></tr>`;
                 }
             }
@@ -552,6 +555,7 @@
             form.action = '/Home/ExportPdf';
 
             // --- ANTI-FORGERY TOKEN LOGIC ---
+
             const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
             const tokenField = document.createElement('input');
             tokenField.type = 'hidden';
