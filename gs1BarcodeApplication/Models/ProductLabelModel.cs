@@ -100,8 +100,8 @@ namespace gs1BarcodeApplication.Models
         public string countContained { get; set; }
 
         // --- All Measurements ---
-        private const string MeasurementRegex = @"^\d{6}$";
-        private const string MeasurementError = "Measurement value must be 6 digits.";
+        private const string MeasurementRegex = @"^\d{1,6}$";
+        private const string MeasurementError = "Measurement value must between 1 - 6 digits.";
 
         [Display(Name = "Net Weight (kg) (3102)")]
         [RegularExpression(MeasurementRegex, ErrorMessage = MeasurementError)]
@@ -114,133 +114,133 @@ namespace gs1BarcodeApplication.Models
         [Display(Name = "Width (m) (3122)")]
         [RegularExpression(MeasurementRegex, ErrorMessage = MeasurementError)]
         public string widthM { get; set; }
-
+        [RegularExpression(MeasurementRegex, ErrorMessage = MeasurementError)]
         [Display(Name = "Depth (m) (3132)")]
         public string depthM { get; set; }
-
+        [RegularExpression(MeasurementRegex, ErrorMessage = MeasurementError)]
         [Display(Name = "Area (m²) (3142)")]
         public string areaSqM { get; set; }
-
+        [RegularExpression(MeasurementRegex, ErrorMessage = MeasurementError)]
         [Display(Name = "Net Volume (L) (3152)")]
         public string netVolumeL { get; set; }
-
+        [RegularExpression(MeasurementRegex, ErrorMessage = MeasurementError)]
         [Display(Name = "Net Volume (m³) (3162)")]
         public string netVolumeM3 { get; set; }
-
+        [RegularExpression(MeasurementRegex, ErrorMessage = MeasurementError)]
         [Display(Name = "Net Weight (lbs) (3202)")]
         public string netWeightLb { get; set; }
-
+        [RegularExpression(MeasurementRegex, ErrorMessage = MeasurementError)]
         [Display(Name = "Length (in) (3212)")]
         public string lengthIn { get; set; }
-
+        [RegularExpression(MeasurementRegex, ErrorMessage = MeasurementError)]
         [Display(Name = "Width (in) (3222)")]
         public string widthIn { get; set; }
-
+        [RegularExpression(MeasurementRegex, ErrorMessage = MeasurementError)]
         [Display(Name = "Depth (in) (3232)")]
         public string depthIn { get; set; }
-
+        [RegularExpression(MeasurementRegex, ErrorMessage = MeasurementError)]
         [Display(Name = "Area (in²) (3242)")]
         public string areaSqIn { get; set; }
-
+        [RegularExpression(MeasurementRegex, ErrorMessage = MeasurementError)]
         [Display(Name = "Net Volume (US gal) (3252)")]
         public string netVolumeUSGal { get; set; }
-
+        [RegularExpression(MeasurementRegex, ErrorMessage = MeasurementError)]
         [Display(Name = "Net Volume (cubic in) (3262)")]
         public string netVolumeCubicIn { get; set; }
-
+        [RegularExpression(MeasurementRegex, ErrorMessage = MeasurementError)]
         [Display(Name = "Gross Weight (kg) (3302)")]
         public string grossWeightKg { get; set; }
-
+        [RegularExpression(MeasurementRegex, ErrorMessage = MeasurementError)]
         [Display(Name = "Gross Length (m) (3312)")]
         public string lengthGrossM { get; set; }
-
+        [RegularExpression(MeasurementRegex, ErrorMessage = MeasurementError)]
         [Display(Name = "Gross Width (m) (3322)")]
         public string widthGrossM { get; set; }
-
+        [RegularExpression(MeasurementRegex, ErrorMessage = MeasurementError)]
         [Display(Name = "Gross Depth (m) (3332)")]
         public string depthGrossM { get; set; }
-
+        [RegularExpression(MeasurementRegex, ErrorMessage = MeasurementError)]
         [Display(Name = "Gross Area (m²) (3342)")]
         public string areaGrossSqM { get; set; }
-
+        [RegularExpression(MeasurementRegex, ErrorMessage = MeasurementError)]
         [Display(Name = "Gross Volume (L) (3352)")]
         public string grossVolumeL { get; set; }
-
+        [RegularExpression(MeasurementRegex, ErrorMessage = MeasurementError)]
         [Display(Name = "Gross Volume (m³) (3362)")]
         public string grossVolumeM3 { get; set; }
-
+        [RegularExpression(MeasurementRegex, ErrorMessage = MeasurementError)]
         [Display(Name = "Gross Weight (lbs) (3402)")]
         public string grossWeightLb { get; set; }
-
+        [RegularExpression(MeasurementRegex, ErrorMessage = MeasurementError)]
         [Display(Name = "Gross Length (in) (3412)")]
         public string lengthGrossIn { get; set; }
-
+        [RegularExpression(MeasurementRegex, ErrorMessage = MeasurementError)]
         [Display(Name = "Gross Width (in) (3422)")]
         public string widthGrossIn { get; set; }
-
+        [RegularExpression(MeasurementRegex, ErrorMessage = MeasurementError)]
         [Display(Name = "Gross Depth (in) (3432)")]
         public string depthGrossIn { get; set; }
-
+        [RegularExpression(MeasurementRegex, ErrorMessage = MeasurementError)]
         [Display(Name = "Gross Area (in²) (3442)")]
         public string areaGrossSqIn { get; set; }
-
+        [RegularExpression(MeasurementRegex, ErrorMessage = MeasurementError)]
         [Display(Name = "Gross Volume (US gal) (3452)")]
         public string grossVolumeUSGal { get; set; }
-
+        [RegularExpression(MeasurementRegex, ErrorMessage = MeasurementError)]
         [Display(Name = "Gross Volume (cubic in) (3462)")]
         public string grossVolumeCubicIn { get; set; }
-
+        [RegularExpression(MeasurementRegex, ErrorMessage = MeasurementError)]
         [Display(Name = "Area (ft²) (3472)")]
         public string areaSqFt { get; set; }
-
+        [RegularExpression(MeasurementRegex, ErrorMessage = MeasurementError)]
         [Display(Name = "Length (ft) (3482)")]
         public string lengthFt { get; set; }
-
+        [RegularExpression(MeasurementRegex, ErrorMessage = MeasurementError)]
         [Display(Name = "Width (ft) (3492)")]
         public string widthFt { get; set; }
-
+        [RegularExpression(MeasurementRegex, ErrorMessage = MeasurementError)]
         [Display(Name = "Depth (ft) (3502)")]
         public string depthFt { get; set; }
-
+        [RegularExpression(MeasurementRegex, ErrorMessage = MeasurementError)]
         [Display(Name = "Gross Weight (metric tons) (3512)")]
         public string grossWeightMetricTon { get; set; }
-
+        [RegularExpression(MeasurementRegex, ErrorMessage = MeasurementError)]
         [Display(Name = "Net Weight (metric tons) (3522)")]
         public string netWeightMetricTon { get; set; }
-
+        [RegularExpression(MeasurementRegex, ErrorMessage = MeasurementError)]
         [Display(Name = "Net Volume (cubic ft) (3532)")]
         public string netVolumeCubicFt { get; set; }
-
+        [RegularExpression(MeasurementRegex, ErrorMessage = MeasurementError)]
         [Display(Name = "Net Volume (quarts) (3542)")]
         public string netVolumeQt { get; set; }
-
+        [RegularExpression(MeasurementRegex, ErrorMessage = MeasurementError)]
         [Display(Name = "Net Weight (oz) (3552)")]
         public string netWeightOz { get; set; }
-
+        [RegularExpression(MeasurementRegex, ErrorMessage = MeasurementError)]
         [Display(Name = "Net Volume (US fluid oz) (3562)")]
         public string netVolumeUSFlOz { get; set; }
-
+        [RegularExpression(MeasurementRegex, ErrorMessage = MeasurementError)]
         [Display(Name = "Net Volume (imperial gal) (3572)")]
         public string netVolumeImpGal { get; set; }
-
+        [RegularExpression(MeasurementRegex, ErrorMessage = MeasurementError)]
         [Display(Name = "Net Volume (imperial fluid oz) (3582)")]
         public string netVolumeImpFlOz { get; set; }
-
+        [RegularExpression(MeasurementRegex, ErrorMessage = MeasurementError)]
         [Display(Name = "Net Volume (cubic yards) (3592)")]
         public string netVolumeCubicYd { get; set; }
-
+        [RegularExpression(MeasurementRegex, ErrorMessage = MeasurementError)]
         [Display(Name = "Net Volume (US pints) (3602)")]
         public string netVolumeUSPint { get; set; }
-
+        [RegularExpression(MeasurementRegex, ErrorMessage = MeasurementError)]
         [Display(Name = "Net Volume (US quarts) (3612)")]
         public string netVolumeUSQt { get; set; }
-
+        [RegularExpression(MeasurementRegex, ErrorMessage = MeasurementError)]
         [Display(Name = "Net Volume (imperial pints) (3622)")]
         public string netVolumeImpPint { get; set; }
-
+        [RegularExpression(MeasurementRegex, ErrorMessage = MeasurementError)]
         [Display(Name = "Net Volume (imperial quarts) (3632)")]
         public string netVolumeImpQt { get; set; }
-
+        [RegularExpression(MeasurementRegex, ErrorMessage = MeasurementError)]
         [Display(Name = "Net Volume (liters per 100 kg) (3642)")]
         public string netVolumeLitPer100Kg { get; set; }
 

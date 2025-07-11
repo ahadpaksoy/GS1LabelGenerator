@@ -151,125 +151,30 @@
         </div>
     </div>
 
+    <!-- Error Modal -->
+
+    <div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="errorModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="errorModalLabel">An Error Occurred</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p id="errorModalMessage"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         // --- DATA AND CONFIGURATION ---
         let counter = 0;
         let qrCodeInstance = null;
-        const gs1Options = [
-            // --- Core Identifiers ---
-            { text: "Serial Shipping Container Code (SSCC) (00)", value: "sscc", tooltip: "Logistics unit unique ID (18 digits, numeric)" },
-            { text: "Global Trade Item Number GTIN (01)", value: "GTIN", tooltip: "Product identifier (14 digits, numeric)" },
-            { text: "GTIN of Contained Trade Items (02)", value: "gtinContained", tooltip: "Contained item GTIN (14 digits, numeric)" },
-            { text: "Batch/Lot Number (10)", value: "batch_lotNumber", tooltip: "Batch or lot number (up to 20 alphanumeric)" },
-            { text: "Production Date (11)", value: "productionDate", tooltip: "Production date (YYMMDD, 6 digits)" },
-            { text: "Due Date (12)", value: "dueDate", tooltip: "Due date (YYMMDD, 6 digits)" },
-            { text: "Packaging Date (13)", value: "packDate", tooltip: "Packaging date (YYMMDD, 6 digits)" },
-            { text: "Best Before Date (15)", value: "bestBeforeDate", tooltip: "Best before date (YYMMDD, 6 digits)" },
-            { text: "Expiration Date (17)", value: "expirationDate", tooltip: "Expiration date (YYMMDD, 6 digits)" },
-            { text: "Product Variant (20)", value: "productVariant", tooltip: "Product variant (2 digits numeric)" },
-            { text: "Serial Number (21)", value: "serialNumber", tooltip: "Unique serial number (up to 20 alphanumeric)" },
-            { text: "Health Care GTIN (22)", value: "healthCareGTIN", tooltip: "Healthcare GTIN (up to 18 digits numeric)" },
-            { text: "Pharma Lot Number (241)", value: "pharmaLotNumber", tooltip: "Pharma lot number (up to 30 alphanumeric)" },
-            { text: "Additional Product ID (242)", value: "additionalProductID", tooltip: "Additional product ID (up to 30 alphanumeric)" },
-            { text: "Customer Part Number (243)", value: "customerPartNumber", tooltip: "Customer part number (up to 30 alphanumeric)" },
-            { text: "Made-to-Order Variation Number (250)", value: "madeToOrderVariation", tooltip: "Custom variation number (up to 6 digits numeric)" },
-            { text: "Secondary Serial Number (251)", value: "secondarySerialNumber", tooltip: "Additional serial number (up to 30 alphanumeric)" },
-            { text: "Global Document Type Identifier (GDTI) (253)", value: "gdti", tooltip: "Document ID (13 digits + up to 17 alphanumeric)" },
-            { text: "Global Coupon Number (GCN) (255)", value: "gcn", tooltip: "Coupon number (13 digits + up to 12 digits numeric)" },
-            { text: "Variable Measure Count (30)", value: "variableCount", tooltip: "Number of trade items (up to 8 digits numeric)" },
-            { text: "Count of Contained Trade Items (37)", value: "countContained", tooltip: "Items contained (up to 8 digits numeric)" },
 
-            // --- Measurements (Net, Metric) ---
-            { text: "Net Weight (kg) (3102)", value: "netWeightKg", tooltip: "Net weight in kg (6 digits, 2 decimal places)" },
-            { text: "Length (m) (3112)", value: "lengthM", tooltip: "Length in meters (6 digits, 2 decimal places)" },
-            { text: "Width (m) (3122)", value: "widthM", tooltip: "Width in meters (6 digits, 2 decimal places)" },
-            { text: "Depth (m) (3132)", value: "depthM", tooltip: "Depth in meters (6 digits, 2 decimal places)" },
-            { text: "Area (m²) (3142)", value: "areaSqM", tooltip: "Area in square meters (6 digits, 2 decimal places)" },
-            { text: "Net Volume (L) (3152)", value: "netVolumeL", tooltip: "Net volume in liters (6 digits, 2 decimal places)" },
-            { text: "Net Volume (m³) (3162)", value: "netVolumeM3", tooltip: "Net volume in cubic meters (6 digits, 2 decimal places)" },
-
-            // --- Measurements (Net, Imperial) ---
-            { text: "Net Weight (lb) (3202)", value: "netWeightLb", tooltip: "Net weight in pounds (6 digits, 2 decimal places)" },
-            { text: "Length (in) (3212)", value: "lengthIn", tooltip: "Length in inches (6 digits, 2 decimal places)" },
-            { text: "Width (in) (3222)", value: "widthIn", tooltip: "Width in inches (6 digits, 2 decimal places)" },
-            { text: "Depth (in) (3232)", value: "depthIn", tooltip: "Depth in inches (6 digits, 2 decimal places)" },
-            { text: "Area (in²) (3242)", value: "areaSqIn", tooltip: "Area in square inches (6 digits, 2 decimal places)" },
-            { text: "Net Volume (US gal) (3252)", value: "netVolumeUSGal", tooltip: "Net volume in US gallons (6 digits, 2 decimal places)" },
-            { text: "Net Volume (cubic in) (3262)", value: "netVolumeCubicIn", tooltip: "Net volume in cubic inches (6 digits, 2 decimal places)" },
-
-            // --- Measurements (Gross, Metric) ---
-            { text: "Gross Weight (kg) (3302)", value: "grossWeightKg", tooltip: "Gross weight in kilograms (6 digits, 2 decimal places)" },
-            { text: "Gross Length (m) (3312)", value: "lengthGrossM", tooltip: "Gross length in meters (6 digits, 2 decimal places)" },
-            { text: "Gross Width (m) (3322)", value: "widthGrossM", tooltip: "Gross width in meters (6 digits, 2 decimal places)" },
-            { text: "Gross Depth (m) (3332)", value: "depthGrossM", tooltip: "Gross depth in meters (6 digits, 2 decimal places)" },
-            { text: "Gross Area (m²) (3342)", value: "areaGrossSqM", tooltip: "Gross area in square meters (6 digits, 2 decimal places)" },
-            { text: "Gross Volume (L) (3352)", value: "grossVolumeL", tooltip: "Gross volume in liters (6 digits, 2 decimal places)" },
-            { text: "Gross Volume (m³) (3362)", value: "grossVolumeM3", tooltip: "Gross volume in cubic meters (6 digits, 2 decimal places)" },
-
-            // --- Measurements (Gross, Imperial) ---
-            { text: "Gross Weight (lb) (3402)", value: "grossWeightLb", tooltip: "Gross weight in pounds (6 digits, 2 decimal places)" },
-            { text: "Gross Length (in) (3412)", value: "lengthGrossIn", tooltip: "Gross length in inches (6 digits, 2 decimal places)" },
-            { text: "Gross Width (in) (3422)", value: "widthGrossIn", tooltip: "Gross width in inches (6 digits, 2 decimal places)" },
-            { text: "Gross Depth (in) (3432)", value: "depthGrossIn", tooltip: "Gross depth in inches (6 digits, 2 decimal places)" },
-            { text: "Gross Area (in²) (3442)", value: "areaGrossSqIn", tooltip: "Gross area in square inches (6 digits, 2 decimal places)" },
-            { text: "Gross Volume (US gal) (3452)", value: "grossVolumeUSGal", tooltip: "Gross volume in US gallons (6 digits, 2 decimal places)" },
-            { text: "Gross Volume (cubic in) (3462)", value: "grossVolumeCubicIn", tooltip: "Gross volume in cubic inches (6 digits, 2 decimal places)" },
-
-            // --- Other Measurements ---
-            { text: "Area (ft²) (3472)", value: "areaSqFt", tooltip: "Area in square feet (6 digits, 2 decimal places)" },
-            { text: "Length (ft) (3482)", value: "lengthFt", tooltip: "Length in feet (6 digits, 2 decimal places)" },
-            { text: "Width (ft) (3492)", value: "widthFt", tooltip: "Width in feet (6 digits, 2 decimal places)" },
-            { text: "Depth (ft) (3502)", value: "depthFt", tooltip: "Depth in feet (6 digits, 2 decimal places)" },
-            { text: "Gross Weight, Metric Tons (3512)", value: "grossWeightMetricTon", tooltip: "Gross weight in metric tons (6 digits, 2 decimal places)" },
-            { text: "Net Weight, Metric Tons (3522)", value: "netWeightMetricTon", tooltip: "Net weight in metric tons (6 digits, 2 decimal places)" },
-            { text: "Net Volume, Cubic Feet (3532)", value: "netVolumeCubicFt", tooltip: "Net volume in cubic feet (6 digits, 2 decimal places)" },
-            { text: "Net Volume, Quarts (3542)", value: "netVolumeQt", tooltip: "Net volume in quarts (6 digits, 2 decimal places)" },
-            { text: "Net Weight, Ounces (3552)", value: "netWeightOz", tooltip: "Net weight in ounces (6 digits, 2 decimal places)" },
-            { text: "Net Volume, US Fluid Ounces (3562)", value: "netVolumeUSFlOz", tooltip: "Net volume in US fluid ounces (6 digits, 2 decimal places)" },
-            { text: "Net Volume, Imperial Gallons (3572)", value: "netVolumeImpGal", tooltip: "Net volume in imperial gallons (6 digits, 2 decimal places)" },
-            { text: "Net Volume, Imperial Fluid Ounces (3582)", value: "netVolumeImpFlOz", tooltip: "Net volume in imperial fluid ounces (6 digits, 2 decimal places)" },
-            { text: "Net Volume, Cubic Yards (3592)", value: "netVolumeCubicYd", tooltip: "Net volume in cubic yards (6 digits, 2 decimal places)" },
-            { text: "Net Volume, US Pints (3602)", value: "netVolumeUSPint", tooltip: "Net volume in US pints (6 digits, 2 decimal places)" },
-            { text: "Net Volume, US Quarts (3612)", value: "netVolumeUSQt", tooltip: "Net volume in US quarts (6 digits, 2 decimal places)" },
-            { text: "Net Volume, Imperial Pints (3622)", value: "netVolumeImpPint", tooltip: "Net volume in imperial pints (6 digits, 2 decimal places)" },
-            { text: "Net Volume, Imperial Quarts (3632)", value: "netVolumeImpQt", tooltip: "Net volume in imperial quarts (6 digits, 2 decimal places)" },
-            { text: "Net Volume, Liters Per 100 kg (3642)", value: "netVolumeLitPer100Kg", tooltip: "Net volume liters per 100 kg (6 digits, 2 decimal places)" },
-
-            // --- Amounts and Consumer Units ---
-            { text: "Number of Consumer Units (3900)", value: "numConsumerUnits", tooltip: "Number of consumer units (up to 8 digits numeric)" },
-            { text: "Amount Payable (3902)", value: "amountPayable", tooltip: "Amount payable, no currency code (up to 15 digits, 2 decimal places)" },
-            { text: "Amount Payable with ISO Currency (3903)", value: "amountPayableISO", tooltip: "Amount payable with 3-digit ISO currency code" },
-            { text: "Amount Payable, Variable (3912)", value: "amountPayableVar", tooltip: "Amount payable (no currency), variable measure" },
-            { text: "Amount Payable, Variable with ISO (3913)", value: "amountPayableVarISO", tooltip: "Amount payable with ISO code, variable measure" },
-
-            // --- Logistics and Party Information ---
-            { text: "Customer Purchase Order Number (400)", value: "customerPONumber", tooltip: "Customer PO number (up to 30 alphanumeric)" },
-            { text: "Consignment Number (401)", value: "consignmentNumber", tooltip: "Consignment number (up to 30 alphanumeric)" },
-            { text: "Global Shipment ID (GSIN) (402)", value: "gsin", tooltip: "Shipment ID (17 digits numeric)" },
-            { text: "Routing Code (403)", value: "routingCode", tooltip: "Routing code (up to 30 alphanumeric)" },
-            { text: "GLN - Ship To (410)", value: "shipTo", tooltip: "Delivery location GLN (13 digits numeric)" },
-            { text: "GLN - Bill To (411)", value: "billTo", tooltip: "Billing location GLN (13 digits numeric)" },
-            { text: "GLN - Purchase From (412)", value: "purchaseFrom", tooltip: "Purchasing party GLN (13 digits numeric)" },
-            { text: "GLN - Forward To (413)", value: "forwardTo", tooltip: "Forwarding location GLN (13 digits numeric)" },
-            { text: "GLN - Physical Location (414)", value: "physicalLoc", tooltip: "General physical location GLN (13 digits numeric)" },
-            { text: "GLN - Invoicing Party (415)", value: "invoicingParty", tooltip: "Invoicing party GLN (13 digits numeric)" },
-            { text: "Ship To Postal Code (420)", value: "shipToPost", tooltip: "Postal code (up to 20 alphanumeric)" },
-            { text: "Ship To Postal Code with ISO (421)", value: "shipToPostWithIso", tooltip: "Postal code + ISO country code" },
-            { text: "Country of Origin (422)", value: "origin", tooltip: "Country of origin ISO code (3 digits numeric)" },
-            { text: "Initial Processing Country (423)", value: "initialProcessingCountry", tooltip: "Countries of initial processing (ISO codes)" },
-            { text: "Processing Country (424)", value: "processingCountry", tooltip: "Country of processing (ISO code)" },
-            { text: "Disassembly Country (425)", value: "disassemblyCountry", tooltip: "Country of disassembly (ISO code)" },
-            { text: "Full Process Country (426)", value: "fullProcessCountry", tooltip: "Country of full process chain (ISO code)" },
-            { text: "Expiration Date/Time (427)", value: "expirationDateTime", tooltip: "Expiration date and time (YYMMDDHH, 8 digits)" },
-
-            // --- Additional Information ---
-            { text: "Component/Part Structure (7001)", value: "componentStructure", tooltip: "Component structuring number (up to 30 alphanumeric)" },
-            { text: "Production URL (8001)", value: "prodUrl", tooltip: "Product information URL (up to 200 characters)" },
-            { text: "Product Characteristics (8002)", value: "prodCharacteristics", tooltip: "Product characteristics (up to 50 alphanumeric)" },
-            { text: "Healthcare Class (8018)", value: "healthcareClass", tooltip: "Healthcare classification codes (up to 20 alphanumeric)" },
-            { text: "Product Data Status (8020)", value: "prodDataStatus", tooltip: "Product data status (up to 20 alphanumeric)" },
-            { text: "Shelf Life Duration (8100)", value: "shelfLifeDuration", tooltip: "Shelf life in days (up to 6 digits)" },
-        ];
         const presets = @Html.Raw(Json.Encode(ViewBag.Presets ?? new Dictionary<string, List<string>>()));
 
         // --- VALIDATION RULES (RESTORED) ---
@@ -360,6 +265,7 @@
             });
             updatePreview();
         }
+
         // Updates the preview in real time.
         function updatePreview() {
             const previewSection = document.getElementById('previewSection');
@@ -387,15 +293,15 @@
             // GS1 Label
             const gs1Data = parts.join('');
 
-   
+
 
             const gs1StringElem = document.getElementById('gs1StringPreview');
             const qrCodeDiv = document.getElementById('qrCodePreview');
 
 
             gs1StringElem.textContent = gs1Data;
-            qrCodeDiv.innerHTML = ''; 
-        
+            qrCodeDiv.innerHTML = '';
+
             if (gs1Data) {
                 previewSection.style.display = 'block';
 
@@ -404,7 +310,7 @@
                     text: gs1Data,
                     width: 128,
                     height: 128,
-                    correctLevel: QRCode.CorrectLevel.Q 
+                    correctLevel: QRCode.CorrectLevel.Q
                 });
 
             } else {
@@ -443,16 +349,19 @@
             reader.readAsText(file);
             event.target.value = '';
         });
+
         document.getElementById('gs1Form').addEventListener('submit', function (e) {
             e.preventDefault();
 
-
             let isFormValid = true;
             const inputs = document.querySelectorAll('#inputList input[data-field]');
+
             if (inputs.length === 0) {
-                alert('Please select a template to generate a label.');
+
+                showErrorModal('Please select a template to generate a label.');
                 return;
             }
+
             for (let input of inputs) {
                 const fieldName = input.getAttribute('data-field');
                 validateInput(input, fieldName);
@@ -460,39 +369,36 @@
                     isFormValid = false;
                 }
             }
+
             if (!isFormValid) {
-                alert('Please fix all invalid or empty fields before submitting.');
+
+                showErrorModal('Please fix all invalid or empty fields before submitting.');
                 return;
             }
-
-
 
             const submitButton = e.target.querySelector('button[type="submit"]');
             submitButton.disabled = true;
             submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Generating...';
 
-
             const formData = new FormData(e.target);
 
             fetch('/Home/Submit', {
                 method: 'POST',
-                body: formData // <-- Send the FormData object directly
+                body: formData
             })
                 .then(response => {
                     if (!response.ok) {
-                        // Check if the response is the yellow screen of death (HTML) or a JSON error
                         const contentType = response.headers.get("content-type");
                         if (contentType && contentType.indexOf("application/json") !== -1) {
                             return response.json().then(data => { throw new Error(data.message || 'An unknown error occurred.') });
                         } else {
-                            return response.text().then(text => { throw new Error('Server returned an unexpected response. Please check the console.') });
+                            return response.text().then(text => { throw new Error('Server returned an unexpected response. Please check the console for details.') });
                         }
                     }
                     return response.json();
                 })
                 .then(data => {
                     if (data.success) {
-                        // ... your existing success logic for populating the modal ...
                         document.getElementById('modalGs1String').textContent = data.gs1String;
                         document.getElementById('modalBarcodeImage').src = data.barcodeImage;
                         document.getElementById('modalQrImage').src = data.qrImage;
@@ -504,12 +410,13 @@
                             downloadPdf(data.gs1String, data.barcodeImage.replace("data:image/png;base64,", ""), data.qrImage.replace("data:image/png;base64,", ""));
                         };
                     } else {
-                        alert('Error from server: ' + data.message);
+
+                        showErrorModal('Error from server: ' + data.message);
                     }
                 })
                 .catch(error => {
                     console.error('Fetch Error:', error);
-                    alert('An error occurred while generating the label:\n' + error.message);
+                    showErrorModal('An error occurred while communicating with the server:\n' + error.message);
                 })
                 .finally(() => {
                     submitButton.disabled = false;
@@ -517,7 +424,27 @@
                 });
         });
 
+        // --- INITIALIZATION ---
         document.addEventListener('DOMContentLoaded', () => {
+            // Fetch the GS1 definitions from our new API endpoint
+            fetch('/api/gs1/definitions')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Could not load GS1 definitions from the server.');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Once loaded, store them in our global variable
+                    gs1Options = data;
+                    console.log('GS1 definitions loaded successfully.');
+                })
+                .catch(error => {
+                    console.error(error);
+                    showErrorModal(error.message);
+                });
+
+            // Initialize dark mode
             setDarkMode(localStorage.getItem('darkMode') === 'true');
         });
 
@@ -525,6 +452,9 @@
         toggleBtn.addEventListener('click', () => {
             setDarkMode(!document.body.classList.contains('dark-mode'));
         });
+
+
+        // --- FUNCTIONS ---
 
         function setDarkMode(enabled) {
             if (enabled) {
@@ -536,6 +466,13 @@
                 localStorage.setItem('darkMode', 'false');
                 toggleBtn.textContent = '🌙';
             }
+        }
+        function showErrorModal(message) {
+            const modalMessageElement = document.getElementById('errorModalMessage');
+            modalMessageElement.textContent = message;
+
+            const errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
+            errorModal.show();
         }
 
         function buildSummaryTable(modelData) {

@@ -2,6 +2,7 @@
 
 using gs1BarcodeApplication.Helpers;
 using gs1BarcodeApplication.Models;
+using gs1BarcodeApplication.Services;
 using iTextSharp.text;
 using iTextSharp.text.pdf;
 using QRCoder;
@@ -20,21 +21,14 @@ namespace gs1BarcodeApplication.Controllers
 {
     public class HomeController : Controller
     {
+        private readonly IPresetService _presetService;
+        public HomeController(IPresetService presetService)
+        {
+            _presetService = presetService;
+        }
         public ActionResult Index()
         {
-            var presets = new Dictionary<string, List<string>>();
-            foreach (var key in WebConfigurationManager.AppSettings.AllKeys)
-            {
-                if (key.StartsWith("preset:"))
-                {
-                    var presetName = key.Substring("preset:".Length);
-                    var fieldsString = WebConfigurationManager.AppSettings[key];
-                    var fieldsList = fieldsString.Split(',')
-                                                 .Select(f => f.Trim())
-                                                 .ToList();
-                    presets.Add(presetName, fieldsList);
-                }
-            }
+            var presets = _presetService.GetDefaultPresets();
             ViewBag.Presets = presets;
             return View();
         }
