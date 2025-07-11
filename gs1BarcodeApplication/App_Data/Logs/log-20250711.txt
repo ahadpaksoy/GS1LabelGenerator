@@ -1,0 +1,37 @@
+{"@t":"2025-07-11T10:58:56.5525245Z","@mt":"Application Starting Up"}
+{"@t":"2025-07-11T10:58:58.6437906Z","@mt":"Processing request: {Method} {Url}","Method":"GET","Url":"/"}
+{"@t":"2025-07-11T10:59:01.1570322Z","@mt":"Processing request: {Method} {Url}","Method":"GET","Url":"/api/gs1/definitions"}
+{"@t":"2025-07-11T10:59:12.9008092Z","@mt":"Processing request: {Method} {Url}","Method":"POST","Url":"/Home/Submit"}
+{"@t":"2025-07-11T10:59:37.9014773Z","@mt":"Processing request: {Method} {Url}","Method":"POST","Url":"/Home/Submit"}
+{"@t":"2025-07-11T11:37:10.5003869Z","@mt":"Application Starting Up"}
+{"@t":"2025-07-11T11:37:12.7360129Z","@mt":"HTTP {Method} {Url} received from {IpAddress}","Method":"GET","Url":"/Home/Index","IpAddress":"::1"}
+{"@t":"2025-07-11T11:37:15.3354673Z","@mt":"HTTP {Method} {Url} received from {IpAddress}","Method":"GET","Url":"/api/gs1/definitions","IpAddress":"::1"}
+{"@t":"2025-07-11T11:37:25.4487976Z","@mt":"HTTP {Method} {Url} received from {IpAddress}","Method":"POST","Url":"/Home/Submit","IpAddress":"::1"}
+{"@t":"2025-07-11T11:37:25.7317919Z","@mt":"Successfully generated GS1 data for GTIN {GTIN}","GTIN":"09506000134352"}
+{"@t":"2025-07-11T11:38:15.2909093Z","@mt":"Application Starting Up"}
+{"@t":"2025-07-11T11:38:15.6889323Z","@mt":"HTTP {Method} {Url} received from {IpAddress}","Method":"GET","Url":"/Home/Index","IpAddress":"::1"}
+{"@t":"2025-07-11T11:38:16.3005472Z","@mt":"HTTP {Method} {Url} received from {IpAddress}","Method":"GET","Url":"/api/gs1/definitions","IpAddress":"::1"}
+{"@t":"2025-07-11T11:39:16.3949304Z","@mt":"Application Starting Up"}
+{"@t":"2025-07-11T11:39:16.7795784Z","@mt":"HTTP {Method} {Url} received from {IpAddress}","Method":"GET","Url":"/","IpAddress":"::1"}
+{"@t":"2025-07-11T11:39:17.3243215Z","@mt":"HTTP {Method} {Url} received from {IpAddress}","Method":"GET","Url":"/api/gs1/definitions","IpAddress":"::1"}
+{"@t":"2025-07-11T11:39:24.2906136Z","@mt":"HTTP {Method} {Url} received from {IpAddress}","Method":"POST","Url":"/Home/Submit","IpAddress":"::1"}
+{"@t":"2025-07-11T11:39:25.1243694Z","@mt":"Successfully generated GS1 data for GTIN {GTIN}","GTIN":"09506000134352"}
+{"@t":"2025-07-11T11:48:48.5359961Z","@mt":"Application Starting Up"}
+{"@t":"2025-07-11T11:48:50.4781993Z","@mt":"HTTP {Method} {Url} received from {IpAddress}","Method":"GET","Url":"/","IpAddress":"::1"}
+{"@t":"2025-07-11T11:48:52.3015333Z","@mt":"HTTP {Method} {Url} received from {IpAddress}","Method":"GET","Url":"/api/gs1/definitions","IpAddress":"::1"}
+{"@t":"2025-07-11T11:49:10.2186274Z","@mt":"HTTP {Method} {Url} received from {IpAddress}","Method":"POST","Url":"/Home/Submit","IpAddress":"::1"}
+{"@t":"2025-07-11T11:49:10.3741104Z","@mt":"Submit failed due to model validation errors. Failures: {@ValidationFailures}","@l":"Warning","ValidationFailures":[{"Field":"netWeightKg","AttemptedValue":null,"Errors":["Measurement value must between 1 - 6 digits."]}]}
+{"@t":"2025-07-11T11:49:14.7807445Z","@mt":"HTTP {Method} {Url} received from {IpAddress}","Method":"POST","Url":"/Home/Submit","IpAddress":"::1"}
+{"@t":"2025-07-11T11:49:14.9172963Z","@mt":"Successfully generated GS1 data for GTIN {GTIN}","GTIN":"09506000134352"}
+{"@t":"2025-07-11T11:50:36.7685547Z","@mt":"HTTP {Method} {Url} received from {IpAddress}","Method":"POST","Url":"/Home/Submit","IpAddress":"::1"}
+{"@t":"2025-07-11T11:50:36.7756444Z","@mt":"Submit failed due to model validation errors. Failures: {@ValidationFailures}","@l":"Warning","ValidationFailures":[{"Field":"netWeightKg","AttemptedValue":null,"Errors":["Measurement value must between 1 - 6 digits."]}]}
+{"@t":"2025-07-11T11:52:45.1660008Z","@mt":"HTTP {Method} {Url} received from {IpAddress}","Method":"POST","Url":"/Home/Submit","IpAddress":"::1"}
+{"@t":"2025-07-11T11:52:45.1719976Z","@mt":"Submit failed due to model validation errors. Failures: {@ValidationFailures}","@l":"Warning","ValidationFailures":[{"Field":"netWeightKg","AttemptedValue":null,"Errors":["Measurement value must between 1 - 6 digits."]}]}
+{"@t":"2025-07-11T12:01:02.2608345Z","@mt":"Application Starting Up"}
+{"@t":"2025-07-11T12:01:04.2514280Z","@mt":"HTTP {Method} {Url} received from {IpAddress}","Method":"GET","Url":"/Home/Index","IpAddress":"::1"}
+{"@t":"2025-07-11T12:01:06.0685826Z","@mt":"HTTP {Method} {Url} received from {IpAddress}","Method":"GET","Url":"/api/gs1/definitions","IpAddress":"::1"}
+{"@t":"2025-07-11T12:03:28.3911359Z","@mt":"Application Starting Up"}
+{"@t":"2025-07-11T12:03:28.7886117Z","@mt":"HTTP {Method} {Url} received from {IpAddress}","Method":"GET","Url":"/Home/Index","IpAddress":"::1"}
+{"@t":"2025-07-11T12:03:35.2222869Z","@mt":"HTTP {Method} {Url} received from {IpAddress}","Method":"GET","Url":"/api/gs1/definitions","IpAddress":"::1"}
+{"@t":"2025-07-11T12:03:48.6976820Z","@mt":"HTTP {Method} {Url} received from {IpAddress}","Method":"POST","Url":"/Home/LogClientValidationFailure","IpAddress":"::1"}
+{"@t":"2025-07-11T12:03:48.8428864Z","@mt":"Client-side validation failed. User attempted to submit with invalid data: {@InvalidInputs}","@l":"Warning","InvalidInputs":[{"Field":"GTIN","Value":"0950600013435","$type":"Gs1FieldInput"},{"Field":"expirationDate","Value":"25070","$type":"Gs1FieldInput"}]}

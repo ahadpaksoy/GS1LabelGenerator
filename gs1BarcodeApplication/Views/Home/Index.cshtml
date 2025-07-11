@@ -351,10 +351,11 @@
         });
 
         document.getElementById('gs1Form').addEventListener('submit', function (e) {
-            e.preventDefault();
+            e.preventDefault(); // Prevents the loading of LabelResult.cshtml
 
             let isFormValid = true;
             const inputs = document.querySelectorAll('#inputList input[data-field]');
+            const invalidFields = [];
 
             if (inputs.length === 0) {
 
@@ -367,10 +368,19 @@
                 validateInput(input, fieldName);
                 if (input.classList.contains('is-invalid') || input.value.trim() === '') {
                     isFormValid = false;
+                    
+                    invalidFields.push({ Field: fieldName, Value: input.value });
                 }
             }
+            
 
             if (!isFormValid) {
+
+                fetch('/Home/LogClientValidationFailure', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(invalidFields)
+                }).catch(err => console.error("Failed to log validation failure:", err));
 
                 showErrorModal('Please fix all invalid or empty fields before submitting.');
                 return;

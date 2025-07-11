@@ -8,7 +8,9 @@ using System.Web.Http;
 using System.Web.Mvc;
 using System.Web.Optimization;
 using System.Web.Routing;
-
+using Serilog;
+using Serilog.Formatting.Compact;
+using System;
 
 namespace gs1BarcodeApplication
 {
@@ -16,6 +18,24 @@ namespace gs1BarcodeApplication
     {
         protected void Application_Start()
         {
+
+            // --- SERILOG CONFIGURATION 
+            Log.Logger = new LoggerConfiguration()
+                .Enrich.FromLogContext() // This is a standard enricher
+                .WriteTo.File(
+                    formatter: new CompactJsonFormatter(),
+                    path: Server.MapPath("~/App_Data/Logs/log-.txt"),
+                    rollingInterval: RollingInterval.Day,
+                    retainedFileCountLimit: 7,
+                    // This helps prevent file locking issues
+                    shared: true
+                )
+                .CreateLogger();
+
+            // Log that the application is starting.
+            Log.Information("Application Starting Up");
+            // --- END OF SERILOG CONFIGURATION ---
+
             AreaRegistration.RegisterAllAreas();
             GlobalConfiguration.Configure(WebApiConfig.Register);
             FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
@@ -35,6 +55,30 @@ namespace gs1BarcodeApplication
 
             DependencyResolver.SetResolver(new AutofacDependencyResolver(container));
             config.DependencyResolver = new AutofacWebApiDependencyResolver(container);
+        }
+
+        protected void Application_Error(object sender, EventArgs e)
+        {            
+            var exception = Server.GetLastError();
+            if (exception != null)
+            {              
+                Log.Error(exception, "An unhandled exception occurred in the application.");
+            }
+        }
+
+       
+        protected void Application_BeginRequest(object sender, EventArgs e)
+        {
+            Log.Information("HTTP {Method} {Url} received from {IpAddress}",
+                Request.HttpMethod,
+                Request.Url.PathAndQuery,
+                Request.UserHostAddress);
+        }
+
+        protected void Application_End()
+        {
+            Log.Information("Application Shutting Down");
+            Log.CloseAndFlush(); 
         }
     }
 }

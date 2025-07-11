@@ -16,6 +16,8 @@ using System.Reflection;
 using System.Web.Configuration;
 using System.Web.Mvc;
 using ZXing;
+using Serilog;
+using Serilog.Formatting.Compact;
 
 namespace gs1BarcodeApplication.Controllers
 {
@@ -59,18 +61,27 @@ namespace gs1BarcodeApplication.Controllers
                 TryValidateModel(model);
                 if (!ModelState.IsValid)
                 {
-                    var errorMessages = ModelState.Values
-                        .SelectMany(v => v.Errors)
-                        .Select(e => e.ErrorMessage);
+                    var validationFailures = ModelState
+                        .Where(ms => ms.Value.Errors.Any())
+                        .Select(ms => new
+                        {
+                            Field = ms.Key, // The name of the property, e.g., "GTIN"
+                                            // Get the invalid value that was submitted for this field.
+                    AttemptedValue = ms.Value.Value?.AttemptedValue,
+                            Errors = ms.Value.Errors.Select(e => e.ErrorMessage).ToList()
+                        })
+                        .ToList();
+                    Log.Warning("Submit failed due to model validation errors. Failures: {@ValidationFailures}", validationFailures);
                     // Return a JSON object with the aggregated error messages
-                    return Json(new { success = false, message = string.Join("\n", errorMessages) });
+                    var userErrorMessages = validationFailures.SelectMany(f => f.Errors);
+                    return Json(new { success = false, message = string.Join("\n", userErrorMessages) });
                 }
 
                 // If validation passes, generate data
                 string gs1Data = Gs1Builder.BuildGs1Data(model);
                 string barcodeBase64 = GenerateBarcode(gs1Data);
                 string qrImage = GenerateQrBase64(gs1Data);
-
+                Log.Information("Successfully generated GS1 data for GTIN {GTIN}", model.GTIN);
                 // Convert the populated model to a dictionary for the client-side summary table
                 var modelData = model.GetType()
                     .GetProperties(BindingFlags.Public | BindingFlags.Instance)
@@ -85,12 +96,14 @@ namespace gs1BarcodeApplication.Controllers
                     barcodeImage = "data:image/png;base64," + barcodeBase64,
                     qrImage = qrImage,
                     modelData = modelData
+
                 });
             }
             catch (Exception ex)
             {
-                
-                return Json(new { success = false, message = "An unexpected error occurred: " + ex.Message });
+
+                Log.Error(ex, "An unhandled exception occurred during submission.");
+                return Json(new { success = false, message = "An unexpected error occurred. The administrator has been notified." });
             }
         }
 
@@ -138,7 +151,12 @@ namespace gs1BarcodeApplication.Controllers
                 return File(ms.ToArray(), "application/pdf", $"GS1_Label_{DateTime.Now:yyyyMMddHHmmss}.pdf");
             }
         }
-
+        [HttpPost]
+        public JsonResult LogClientValidationFailure(List<Gs1FieldInput> inputs)
+        {
+            Log.Warning("Client-side validation failed. User attempted to submit with invalid data: {@InvalidInputs}", inputs);
+            return Json(new { success = true });
+        }
         // --- Helper methods ---
         private string GenerateBarcode(string content)
         {
