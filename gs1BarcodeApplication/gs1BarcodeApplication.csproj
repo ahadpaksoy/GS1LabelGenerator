@@ -239,7 +239,6 @@
     <Content Include="Content\Site.css" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
-    <Content Include="presets.json" />
     <Content Include="Dokumantasyon.md" />
     <Content Include="gs1definitions.json" />
     <None Include="Scripts\jquery-3.3.1.intellisense.js" />
