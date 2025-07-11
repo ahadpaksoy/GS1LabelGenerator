@@ -3,8 +3,8 @@
 using gs1BarcodeApplication.Helpers;
 using gs1BarcodeApplication.Models;
 using gs1BarcodeApplication.Services;
-using iTextSharp.text;
-using iTextSharp.text.pdf;
+using QuestPDF.Fluent;
+using gs1BarcodeApplication.Documents;
 using QRCoder;
 using System;
 using System.Collections.Generic;
@@ -111,45 +111,13 @@ namespace gs1BarcodeApplication.Controllers
         [ValidateAntiForgeryToken]
         public FileResult ExportPdf(string gs1String, string barcodeBase64, string qrBase64)
         {
-            
-            using (MemoryStream ms = new MemoryStream())
-            {
-                Document document = new Document(PageSize.A6, 25, 25, 30, 30);
-                PdfWriter.GetInstance(document, ms);
-                document.Open();
-
-                var titleFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 14);
-                var textFont = FontFactory.GetFont(FontFactory.HELVETICA, 10);
-
-                document.Add(new Paragraph("Generated GS1 Label", titleFont) { Alignment = Element.ALIGN_CENTER });
-                document.Add(new Chunk("\n"));
-
-                if (!string.IsNullOrEmpty(barcodeBase64))
-                {
-                    byte[] barcodeBytes = Convert.FromBase64String(barcodeBase64);
-                    var barcodeImg = iTextSharp.text.Image.GetInstance(barcodeBytes);
-                    barcodeImg.ScaleToFit(document.PageSize.Width - document.LeftMargin - document.RightMargin, 50f);
-                    barcodeImg.Alignment = Element.ALIGN_CENTER;
-                    document.Add(barcodeImg);
-                }
-
-                document.Add(new Chunk("\n"));
-                document.Add(new Paragraph("GS1 Data:", textFont));
-                document.Add(new Paragraph(gs1String, FontFactory.GetFont(FontFactory.COURIER, 9)));
-                document.Add(new Chunk("\n"));
-
-                if (!string.IsNullOrEmpty(qrBase64))
-                {
-                    byte[] qrBytes = Convert.FromBase64String(qrBase64);
-                    var qrImg = iTextSharp.text.Image.GetInstance(qrBytes);
-                    qrImg.ScaleToFit(100f, 100f);
-                    qrImg.Alignment = Element.ALIGN_CENTER;
-                    document.Add(qrImg);
-                }
-
-                document.Close();
-                return File(ms.ToArray(), "application/pdf", $"GS1_Label_{DateTime.Now:yyyyMMddHHmmss}.pdf");
-            }
+            QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
+            byte[] barcodeBytes = !string.IsNullOrEmpty(barcodeBase64) ? Convert.FromBase64String(barcodeBase64) : null;
+            byte[] qrCodeBytes = !string.IsNullOrEmpty(qrBase64) ? Convert.FromBase64String(qrBase64) : null;
+            var document = new Gs1LabelDocument(gs1String, barcodeBytes, qrCodeBytes);
+            byte[] pdfBytes = document.GeneratePdf();
+            var fileName = $"GS1_Label_{DateTime.Now:yyyyMMddHHmmss}.pdf";
+            return File(pdfBytes, "application/pdf", fileName);
         }
         [HttpPost]
         public JsonResult LogClientValidationFailure(List<Gs1FieldInput> inputs)

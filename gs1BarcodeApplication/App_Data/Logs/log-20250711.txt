@@ -35,3 +35,10 @@
 {"@t":"2025-07-11T12:03:35.2222869Z","@mt":"HTTP {Method} {Url} received from {IpAddress}","Method":"GET","Url":"/api/gs1/definitions","IpAddress":"::1"}
 {"@t":"2025-07-11T12:03:48.6976820Z","@mt":"HTTP {Method} {Url} received from {IpAddress}","Method":"POST","Url":"/Home/LogClientValidationFailure","IpAddress":"::1"}
 {"@t":"2025-07-11T12:03:48.8428864Z","@mt":"Client-side validation failed. User attempted to submit with invalid data: {@InvalidInputs}","@l":"Warning","InvalidInputs":[{"Field":"GTIN","Value":"0950600013435","$type":"Gs1FieldInput"},{"Field":"expirationDate","Value":"25070","$type":"Gs1FieldInput"}]}
+{"@t":"2025-07-11T12:37:32.3968106Z","@mt":"Application Starting Up"}
+{"@t":"2025-07-11T12:37:34.9532861Z","@mt":"HTTP {Method} {Url} received from {IpAddress}","Method":"GET","Url":"/","IpAddress":"::1"}
+{"@t":"2025-07-11T12:37:38.0334316Z","@mt":"HTTP {Method} {Url} received from {IpAddress}","Method":"GET","Url":"/api/gs1/definitions","IpAddress":"::1"}
+{"@t":"2025-07-11T12:37:45.7358775Z","@mt":"HTTP {Method} {Url} received from {IpAddress}","Method":"POST","Url":"/Home/Submit","IpAddress":"::1"}
+{"@t":"2025-07-11T12:37:46.0767368Z","@mt":"Successfully generated GS1 data for GTIN {GTIN}","GTIN":"09506000134352"}
+{"@t":"2025-07-11T12:37:46.9661767Z","@mt":"HTTP {Method} {Url} received from {IpAddress}","Method":"POST","Url":"/Home/ExportPdf","IpAddress":"::1"}
+{"@t":"2025-07-11T12:37:47.8823710Z","@mt":"Application Shutting Down"}
