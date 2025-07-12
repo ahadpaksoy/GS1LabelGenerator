@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("gs1BarcodeApplication.Tests")]
+[assembly: AssemblyTitle("gs1BarcodeApplication.Test")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("gs1BarcodeApplication.Tests")]
+[assembly: AssemblyProduct("gs1BarcodeApplication.Test")]
 [assembly: AssemblyCopyright("Copyright ©  2025")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("0d7e21f3-adf3-4f08-82a9-1d6c40dfc177")]
+[assembly: Guid("55e04f34-6b7f-4186-b8fc-7c809d926917")]
 
 // Version information for an assembly consists of the following four values:
 //

@@ -55,8 +55,7 @@ namespace gs1BarcodeApplication.Documents
                         {
                             column.Item().AlignCenter().Column(qrColumn =>
                             {
-                                qrColumn.Item().Text("QR Code:");
-                                qrColumn.Item().Box()
+                                qrColumn.Item().Shrink() // Renamed method
                                     .MaxHeight(100)
                                     .MaxWidth(100)
                                     .Image(QrCodeBytes);
