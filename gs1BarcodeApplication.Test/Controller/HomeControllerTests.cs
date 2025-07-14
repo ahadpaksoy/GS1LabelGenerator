@@ -37,7 +37,7 @@ namespace gs1BarcodeApplication.Tests.Controllers
         [Test]
         public void Index_WhenCalled_ReturnsViewResultWithCorrectPresetsInViewBag()
         {
-            // ARRANGE: 
+            // ARRANGE
             var expectedPresets = new Dictionary<string, List<string>>
             {
                 { "Test Preset", new List<string> { "GTIN", "serialNumber" } }
@@ -54,6 +54,28 @@ namespace gs1BarcodeApplication.Tests.Controllers
 
             Assert.IsNotNull(actualPresets);
             Assert.AreEqual(expectedPresets, actualPresets);
+        }
+
+        [Test]
+
+        public void Submit_WithNullInputs_ReturnJsonError()
+        {
+            // ACT
+            var result = _controller.Submit(null) as JsonResult;
+
+            // ASSERT
+            var jsonData = result.Data;
+            var successProperty = jsonData.GetType().GetProperty("success");
+            var messageProperty = jsonData.GetType().GetProperty("message");
+
+            Assert.IsNotNull(successProperty, "The JSON data should have a 'success' property");
+            Assert.IsNotNull(messageProperty, "The JSON data should have a 'message' property");
+
+            var successValue = (bool)successProperty.GetValue(jsonData, null);
+            var messageValue = messageProperty.GetValue(jsonData, null) as string;
+
+            Assert.IsFalse(successValue, "The 'success' property should be false or null input");
+            Assert.IsNotEmpty(messageValue, "An error message should be returned for null property");
         }
     }
 }
