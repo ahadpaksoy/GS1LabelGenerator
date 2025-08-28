@@ -13,6 +13,7 @@
 
 Purchasing/operations teams often need to generate GS1 labels quickly and consistently across product lines. This tool provides a **template-based form** that renders the correct GS1 string as you type, shows a **scannable QR code**, produces a **Code-128 barcode**, and exports an **A6 PDF** ready for printing.
 
+<table>
   <tr>
     <td align="center"><strong>Input Page</strong></td>
     <td align="center"><strong>Submit Page</strong></td>
