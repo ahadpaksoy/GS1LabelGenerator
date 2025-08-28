@@ -119,14 +119,15 @@ This example mirrors the one from the repo README. ([GitHub][1])
 ## Architecture
 
 ```mermaid
-flowchart LR
-  U[User] --> UI[Preset-driven Form (Bootstrap 5)]
-  UI --> V[Client-side Validation\n(GTIN check, YYMMDD, lengths)]
-  UI --> P[Preview: GS1 string + QR\n(QRCoder)]
+graph LR
+  U[User] --> UI["Preset-driven Form (Bootstrap 5)"]
+  UI --> V["Client-side Validation<br/>(GTIN check, YYMMDD, lengths)"]
+  UI --> P["Preview: GS1 string + QR<br/>(QRCoder)"]
   UI -->|Export| S[Server]
-  S --> B[Barcode (ZXing.Net)\nCode-128]
-  S --> Q[QR (QRCoder)]
-  S --> D[PDF (iTextSharp)\nA6 export]
+  S --> B["Barcode (ZXing.Net)<br/>Code-128"]
+  S --> Q["QR (QRCoder)"]
+  S --> D["PDF (iTextSharp)<br/>A6 export"]
+
 ```
 
 * **Barcode/QR generation:** ZXing.Net (barcodes like Code-128) and QRCoder (QR) are used for rendering; both are well-known NuGet packages. 
