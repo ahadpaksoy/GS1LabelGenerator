@@ -1,4 +1,4 @@
-# GS1 Label Generator — README
+# GS1 Label Generator
 
 > A dynamic, preset-driven ASP.NET MVC app for building GS1-compliant labels with live preview (string + QR), Code-128 barcode, and PDF export. 
 ## Table of contents
